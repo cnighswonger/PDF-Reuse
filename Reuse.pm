@@ -26,6 +26,7 @@ our @EXPORT  = qw(prFile
                   prExtract
                   prForm
                   prImage
+                  prAltJpeg
                   prJpeg
                   prDoc
                   prDocForm
@@ -1637,6 +1638,7 @@ To write a program with PDF::Reuse, you need these components:
         prInit<BR>
         prField<BR>
         prImage<BR>
+        prAltJpeg<BR>
         prJpeg<BR>
         prFont<BR>
         prFontSize<BR>
@@ -2470,12 +2472,54 @@ If you call this function without parameters all global variables, including the
 internal tables, are initiated.
 
 
-=head2 prJpeg		- import a jpeg-image
+=head2 prAltJpeg		- import a low-res jpeg-image for display and a high-res jpeg-image for printing
 
-   prJpeg ( $imageFile, $width, $height )
+   prAltJpeg ( $imageData, $width, $height, $format, $altImageData, $altWidth, $altHeight, $altFormat )
 
 B<$imageFile> contains 1 single jpeg-image. B<$width> and B<$height>
-also have to be specified. Returns the B<$internalName>
+also have to be specified. B<$format> indicates the format the image
+data takes: 0 for file, 1 for binary string. B<$altImageFile> etc.
+follows the same foramt. Returns the B<$internalName>
+
+   use PDF::Reuse;
+   use Image::Info qw(image_info dim);
+   use strict;
+
+   my $file = 'myImage.jpg';
+   my $info = image_info($file);
+   my ($width, $height) = dim($info);    # Get the dimensions
+
+   my $alt_file = 'myImage.jpg';
+   my $alt_info = image_info($alt_file);
+   my ($alt_width, $alt_height) = dim($alt_info);
+
+   prFile('myFile.pdf');
+   my $intName = prAltJpeg("$file",         # Define the image
+                            $width,         # in the document
+                            $height,
+                            0,
+                            "$alt_file",
+                            $alt_width,
+                            $alt_height,
+                            0);
+
+   my $str = "q\n";
+   $str   .= "$width 0 0 $height 10 10 cm\n";
+   $str   .= "/$intName Do\n";
+   $str   .= "Q\n";
+   prAdd($str);
+   prEnd();
+
+This is a little like an extra or reserve routine to add images to the document.
+The most simple way is to use prImage()
+
+=head2 prJpeg		- import a jpeg-image
+
+   prJpeg ( $imageData, $width, $height, $format )
+
+B<$imageFile> contains 1 single jpeg-image. B<$width> and B<$height>
+also have to be specified. B<$format> indicates the format the image
+data takes: 0 for file, 1 for binary string. Returns the B<$internalName>
 
    use PDF::Reuse;
    use Image::Info qw(image_info dim);
@@ -2488,7 +2532,8 @@ also have to be specified. Returns the B<$internalName>
    prFile('myFile.pdf');
    my $intName = prJpeg("$file",         # Define the image
                          $width,         # in the document
-                         $height);
+                         $height,
+                         0);
 
    my $str = "q\n";
    $str   .= "$width 0 0 $height 10 10 cm\n";
@@ -3802,32 +3847,84 @@ sub fillTheForm
    return $str;
 }
 
+sub prAltJpeg
+{  my ($iData, $iWidth, $iHeight, $iFormat,$aiData, $aiWidth, $aiHeight, $aiFormat) = @_;
+   if (! $pos)                    # If no output is active, it is no use to continue
+   {   return undef;
+   }
+   prJpeg($aiData, $aiWidth, $aiHeight, $aiFormat);
+   my $altObjNr = $objNr;
+   $imageNr++;
+   $objNr++;
+   $objekt[$objNr] = $pos;
+   $utrad = "$objNr 0 obj\n" .
+            "[ << /Image $altObjNr 0 R\n" .
+            "/DefaultForPrinting true\n" .
+            ">>\n" .
+            "]\n" .
+            "endobj\n";
+   $pos += syswrite UTFIL, $utrad;
+   if ($runfil)
+   {  $log .= "Jpeg~AltImage\n";
+   }
+   $objRef{$namnet} = $objNr;
+   my $namnet = prJpeg($iData, $iWidth, $iHeight, $iFormat, $objNr);
+   if (! $pos)
+   {  errLog("No output file, you have to call prFile first");
+   }
+   return $namnet;
+}
+
 sub prJpeg
-{  my ($iFile, $iWidth, $iHeight) = @_;
+{  my ($iData, $iWidth, $iHeight, $iFormat, $altArrayObjNr) = @_;
    my ($iLangd, $namnet, $utrad);
    if (! $pos)                    # If no output is active, it is no use to continue
    {   return undef;
    }
    my $checkidOld = $checkId;
-   ($iFile, $checkId) = findGet($iFile, $checkidOld);
-   if ($iFile)
-   {  $iLangd = (stat($iFile))[7];
+   if (!$iFormat)
+   {   ($iFile, $checkId) = findGet($iData, $checkidOld);
+       if ($iFile)
+       {  $iLangd = (stat($iFile))[7];
+          $imageNr++;
+          $namnet = 'Ig' . $imageNr;
+          $objNr++;
+          $objekt[$objNr] = $pos;
+          open (BILDFIL, "<$iFile") || errLog("Couldn't open $iFile, $!, aborts");
+          binmode BILDFIL;
+          my $iStream;
+          sysread BILDFIL, $iStream, $iLangd;
+          $utrad = "$objNr 0 obj\n<</Type/XObject/Subtype/Image/Name/$namnet" .
+                    "/Width $iWidth /Height $iHeight /BitsPerComponent 8 " .
+                    ($altArrayObjNr ? "/Alternates $altArrayObjNr 0 R " : "") .
+                    "/Filter/DCTDecode/ColorSpace/DeviceRGB"
+                    . "/Length $iLangd >>stream\n$iStream\nendstream\nendobj\n";
+          close BILDFIL;
+          $pos += syswrite UTFIL, $utrad;
+          if ($runfil)
+          {  $log .= "Cid~$checkId\n";
+             $log .= "Jpeg~$iFile~$iWidth~$iHeight\n";
+          }
+          $objRef{$namnet} = $objNr;
+       }
+   }
+   elsif ($iFormat == 1)
+   {  my $iBlob = $iData;
+      $iLangd = length($iBlob);
       $imageNr++;
       $namnet = 'Ig' . $imageNr;
       $objNr++;
       $objekt[$objNr] = $pos;
-      open (BILDFIL, "<$iFile") || errLog("Couldn't open $iFile, $!, aborts");
-      binmode BILDFIL;
-      my $iStream;
-      sysread BILDFIL, $iStream, $iLangd;
       $utrad = "$objNr 0 obj\n<</Type/XObject/Subtype/Image/Name/$namnet" .
-                "/Width $iWidth /Height $iHeight /BitsPerComponent 8 /Filter/DCTDecode/ColorSpace/DeviceRGB"
-                . "/Length $iLangd >>stream\n$iStream\nendstream\nendobj\n";
-      close BILDFIL;
+                "/Width $iWidth /Height $iHeight /BitsPerComponent 8 " .
+                ($altArrayObjNr ? "/Alternates $altArrayObjNr 0 R " : "") .
+                "/Filter/DCTDecode/ColorSpace/DeviceRGB"
+                . "/Length $iLangd >>stream\n$iBlob\nendstream\nendobj\n";
       $pos += syswrite UTFIL, $utrad;
       if ($runfil)
       {  $log .= "Cid~$checkId\n";
-         $log .= "Jpeg~$iFile~$iWidth~$iHeight\n";
+         $log .= "Jpeg~$iFile~$iWidth~$iHeight\n" if !$iFormat;
+         $log .= "Jpeg~Blob~$iWidth~$iHeight\n" if $iFormat == 1;
       }
       $objRef{$namnet} = $objNr;
    }
