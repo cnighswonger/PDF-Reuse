@@ -28,6 +28,7 @@ our @EXPORT  = qw(prFile
                   prImage
                   prAltJpeg
                   prJpeg
+                  prJpegBlob
                   prDoc
                   prDocForm
                   prFont
@@ -1640,6 +1641,7 @@ To write a program with PDF::Reuse, you need these components:
         prImage<BR>
         prAltJpeg<BR>
         prJpeg<BR>
+        prJpegBlob<BR>
         prFont<BR>
         prFontSize<BR>
         prTTFont<BR>
@@ -3932,6 +3934,64 @@ sub prJpeg
    {  errLog("No output file, you have to call prFile first");
    }
    undef $checkId;
+   return $namnet;
+}
+
+sub prJpegBlob
+{  my ($iData, $iWidth, $iHeight, $iFormat, $altArrayObjNr) = @_;
+   my ($iLangd, $namnet, $utrad);
+   if (! $PDF::Reuse::pos)                    # If no output is active, it is no use to continue
+   {   return;
+   }
+   my $checkidOld = $PDF::Reuse::checkId;
+   if (!$iFormat)
+   {   my ($iFile, $checkId) = findGet($iData, $checkidOld);
+       if ($iFile)
+       {  $iLangd = (stat($iFile))[7];
+          $PDF::Reuse::imageNr++;
+          $namnet = 'Ig' . $PDF::Reuse::imageNr;
+          $PDF::Reuse::objNr++;
+          $PDF::Reuse::objekt[$PDF::Reuse::objNr] = $PDF::Reuse::pos;
+          open (my $fh, '<', "$iFile") || errLog("Couldn't open $iFile, $!, aborts");
+          binmode $fh;
+          my $iStream;
+          sysread $fh, $iStream, $iLangd;
+          $utrad = "$PDF::Reuse::objNr 0 obj\n<</Type/XObject/Subtype/Image/Name/$namnet" .
+                    "/Width $iWidth /Height $iHeight /BitsPerComponent 8 " .
+                    ($altArrayObjNr ? "/Alternates $altArrayObjNr 0 R " : "") .
+                    "/Filter/DCTDecode/ColorSpace/DeviceRGB"
+                    . "/Length $iLangd >>stream\n$iStream\nendstream\nendobj\n";
+          close $fh;
+          $PDF::Reuse::pos += syswrite $PDF::Reuse::UTFIL, $utrad;
+          if ($PDF::Reuse::runfil)
+          {  $PDF::Reuse::log .= "Cid~$PDF::Reuse::checkId\n";
+             $PDF::Reuse::log .= "Jpeg~$iFile~$iWidth~$iHeight\n";
+          }
+          $PDF::Reuse::objRef{$namnet} = $PDF::Reuse::objNr;
+       }
+       undef $checkId;
+   }
+   elsif ($iFormat == 1)
+   {  my $iBlob = $iData;
+      $iLangd = length($iBlob);
+      $PDF::Reuse::imageNr++;
+      $namnet = 'Ig' . $PDF::Reuse::imageNr;
+      $PDF::Reuse::objNr++;
+      $PDF::Reuse::objekt[$PDF::Reuse::objNr] = $PDF::Reuse::pos;
+      $utrad = "$PDF::Reuse::objNr 0 obj\n<</Type/XObject/Subtype/Image/Name/$namnet" .
+                "/Width $iWidth /Height $iHeight /BitsPerComponent 8 " .
+                ($altArrayObjNr ? "/Alternates $altArrayObjNr 0 R " : "") .
+                "/Filter/DCTDecode/ColorSpace/DeviceRGB"
+                . "/Length $iLangd >>stream\n$iBlob\nendstream\nendobj\n";
+      $PDF::Reuse::pos += syswrite *PDF::Reuse::UTFIL, $utrad;
+      if ($PDF::Reuse::runfil)
+      {  $PDF::Reuse::log .= "Jpeg~Blob~$iWidth~$iHeight\n";
+      }
+      $PDF::Reuse::objRef{$namnet} = $PDF::Reuse::objNr;
+   }
+   if (! $PDF::Reuse::pos)
+   {  errLog("No output file, you have to call prFile first");
+   }
    return $namnet;
 }
 
