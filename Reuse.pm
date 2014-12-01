@@ -2512,8 +2512,6 @@ follows the same foramt. Returns the B<$internalName>
    prAdd($str);
    prEnd();
 
-This is a little like an extra or reserve routine to add images to the document.
-The most simple way is to use prImage()
 
 =head2 prJpeg       - import a jpeg-image
 
