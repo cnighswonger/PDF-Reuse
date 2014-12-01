@@ -508,8 +508,8 @@ sub prText
      my $negSin = $Sin * -1;
 
      my $encText = $ttfont ? $ttfont->encode_text($TxT) : "\($TxT\)";
-     $stream .=   "\nq\n"		                    # enter a new stack frame
-                # . "/Gs0 gs\n"	                            # reset graphic mode
+     $stream .=   "\nq\n"                           # enter a new stack frame
+                # . "/Gs0 gs\n"                             # reset graphic mode
                 . "$Cos $Sin $negSin $Cos $xPos $yPos cm\n" # rotation/translation in the CM
                 . "\nBT /$Font $fontSize Tf "
                 . "$x_align_offset 0 Td $encText Tj ET\n"   # text @ 0,0
@@ -1668,7 +1668,7 @@ To write a program with PDF::Reuse, you need these components:
         prBar*<BR>
         prLog*<BR>
         prTouchUp*<BR>
-	prVers*<BR>
+    prVers*<BR>
         prCid*<BR>
         prId*<BR>
         prIdType*<BR></TD>
@@ -1690,7 +1690,7 @@ To write a program with PDF::Reuse, you need these components:
 
 =head1 Mandatory Functions
 
-=head2 prFile		- define output
+=head2 prFile       - define output
 
 Alternative 1:
 
@@ -1720,7 +1720,7 @@ way the document is initially displayed.
 Look at any program in this documentation for examples. prInitVars() shows how
 this function could be used together with a web server.
 
-=head2 prEnd		- end/flush buffers
+=head2 prEnd        - end/flush buffers
 
    prEnd ()
 
@@ -1732,7 +1732,7 @@ Look at any program in this documentation for an example.
 
 =head1 Optional Functions
 
-=head2 prAdd		- add "low level" instructions
+=head2 prAdd        - add "low level" instructions
 
     prAdd ( $string )
 
@@ -1766,7 +1766,7 @@ This function is intended to give you detail control at a low level.
    prEnd();
 
 
-=head2 prBookmark		- define bookmarks
+=head2 prBookmark       - define bookmarks
 
    prBookmark($reference)
 
@@ -1827,7 +1827,7 @@ to other documents.
 
 B<See "Remarks about JavaScript">
 
-=head2 prCompress		- compress/zip added streams
+=head2 prCompress       - compress/zip added streams
 
    prCompress (1)
 
@@ -1841,7 +1841,7 @@ prCompress(); is a directive not to compress. This is default.
 
 See e.g. "Starting to reuse" in the tutorial for an example.
 
-=head2 prDoc		- include pages from a document
+=head2 prDoc        - include pages from a document
 
    prDoc ( $documentName, $firstPage, $lastPage )
 
@@ -1929,7 +1929,7 @@ used prSinglePage, look at a very similar example under that function.
    prEnd;
 
 
-=head2 prDocDir		- set directory for produced documents
+=head2 prDocDir     - set directory for produced documents
 
    prDocDir ( $directoryName )
 
@@ -1944,7 +1944,7 @@ Sets directory for produced documents
    prText(200, 600, 'New text');
    prEnd();
 
-=head2 prDocForm		- use an interactive page as a form
+=head2 prDocForm        - use an interactive page as a form
 
 Alternative 1) You put your parameters in an anonymous hash (only B<file> is really
 necessary, the others get default values if not given).
@@ -1966,7 +1966,7 @@ Ex.:
 
 Alternative 2) You put your parameters in this order
 
-	prDocForm ( $pdfFile, [$page, $adjust, $effect, $tolerant, $x, $y, $degree,
+    prDocForm ( $pdfFile, [$page, $adjust, $effect, $tolerant, $x, $y, $degree,
             $size, $xsize, $ysize] )
 
 
@@ -2008,7 +2008,7 @@ Remember to save that file before closing it.)
 
 B<See Remarks about JavaScript>
 
-=head2 prExtract		- extract an object group
+=head2 prExtract        - extract an object group
 
    prExtract ( $pdfFile, $pageNo, $oldInternalName )
 
@@ -2021,9 +2021,9 @@ When you call this function, the necessary objects will be copied to your new
 PDF-file, and you can refer to them with the new name you receive.
 
 
-=head2 prField		- assign a value to an interactive field
+=head2 prField      - assign a value to an interactive field
 
-	prField ( $fieldName, $value )
+    prField ( $fieldName, $value )
 
 B<$fieldName> is an interactive field in the document you are creating.
 It has to be spelled exactly the same way here as it spelled in the document.
@@ -2051,7 +2051,7 @@ JavaScript interpreter will simply not be aware of old functions in the PDF-docu
 when the initiation is done.)
 
 
-=head2 prFont		- set current font
+=head2 prFont       - set current font
 
    prFont ( $fontName )
 
@@ -2101,14 +2101,14 @@ The example above shows you two ways of setting and using a font. One simple, an
 one complicated with a possibility to detail control.
 
 
-=head2 prFontSize		- set current font size
+=head2 prFontSize       - set current font size
 
    prFontSize ( $size )
 
 Returns B<$actualSize, $fontSizeBeforetheChange>. Without parameters
 prFontSize() sets the size to 12 points, which is default.
 
-=head2 prForm		- use a page from an old document as a form/background
+=head2 prForm       - use a page from an old document as a form/background
 
 Alternative 1) You put your parameters in an anonymous hash (only B<file> is really
 necessary, the others get default values if not given).
@@ -2130,7 +2130,7 @@ Ex.:
 
 Alternative 2) You put your parameters in this order
 
-	prForm ( $pdfFile, $page, $adjust, $effect, $tolerant, $x, $y, $degree,
+    prForm ( $pdfFile, $page, $adjust, $effect, $tolerant, $x, $y, $degree,
             $size, $xsize, $ysize )
 
 
@@ -2258,7 +2258,7 @@ changed. It is adjusted to the media box which is current at that moment.
 Also data about the form is taken, so you can control more in detail how it
 will be displayed.
 
-=head2 prGetLogBuffer		- get the log buffer.
+=head2 prGetLogBuffer       - get the log buffer.
 
 prGetLogBuffer ()
 
@@ -2269,7 +2269,7 @@ accumulating the single values) A log has to be active, see prLogDir() below
 Look at "Using the template" and "Restoring a document from the log" in the
 tutorial for examples of usage.
 
-=head2 prGraphState		- define a graphic state parameter dictionary
+=head2 prGraphState     - define a graphic state parameter dictionary
 
    prGraphState ( $string )
 
@@ -2317,7 +2317,7 @@ checks are made. Perhaps you will never have to use this function.
    prEnd();
 
 
-=head2 prImage		- reuse an image from an old PDF document
+=head2 prImage      - reuse an image from an old PDF document
 
 Alternative 1) You put your parameters in an anonymous hash (only B<file> is really
 necessary, the others get default values if not given).
@@ -2340,7 +2340,7 @@ Ex.:
 
 Alternative 2) You put your parameters in this order
 
-	prImage ( $pdfFile, [$page, $imageNo, $effect, $adjust, $x, $y, $degree,
+    prImage ( $pdfFile, [$page, $imageNo, $effect, $adjust, $x, $y, $degree,
             $size, $xsize, $ysize] )
 
 Returns in scalar context B<$internalName> As a list B<$internalName, $width,
@@ -2416,7 +2416,7 @@ page, the two images are scaled and shown.
 In the distribution there is an utility program, 'reuseComponent_pl', which displays
 included images in a PDF-file and their "names".
 
-=head2 prInit		- add JavaScript to be executed at initiation
+=head2 prInit       - add JavaScript to be executed at initiation
 
    prInit ( $string, $duplicateCode )
 
@@ -2445,7 +2445,7 @@ a bug occurs. The JavaScript interpreter "exits" instead of returning, the execu
 of the JavaScript might finish to early. This is a bug in Acrobat/Reader 5.
 
 
-=head2 prInitVars		- initiate global variables and internal tables
+=head2 prInitVars       - initiate global variables and internal tables
 
    prInitVars(1)
 
@@ -2474,7 +2474,7 @@ If you call this function without parameters all global variables, including the
 internal tables, are initiated.
 
 
-=head2 prAltJpeg		- import a low-res jpeg-image for display and a high-res jpeg-image for printing
+=head2 prAltJpeg        - import a low-res jpeg-image for display and a high-res jpeg-image for printing
 
    prAltJpeg ( $imageData, $width, $height, $format, $altImageData, $altWidth, $altHeight, $altFormat )
 
@@ -2515,7 +2515,7 @@ follows the same foramt. Returns the B<$internalName>
 This is a little like an extra or reserve routine to add images to the document.
 The most simple way is to use prImage()
 
-=head2 prJpeg		- import a jpeg-image
+=head2 prJpeg       - import a jpeg-image
 
    prJpeg ( $imageData, $width, $height, $format )
 
@@ -2547,7 +2547,7 @@ data takes: 0 for file, 1 for binary string. Returns the B<$internalName>
 This is a little like an extra or reserve routine to add images to the document.
 The most simple way is to use prImage()
 
-=head2 prJs		- add JavaScript
+=head2 prJs     - add JavaScript
 
    prJs ( $string|$fileName )
 
@@ -2615,7 +2615,7 @@ and in blue.
 'hyperLink' has a few parameters: $x, $y, $textToBeShown, $hyperLink and
 $fontSize (not shown in the example). It returns current x-position. )
 
-=head2 prLog		- add a string to the log
+=head2 prLog        - add a string to the log
 
    prLog ( $string )
 
@@ -2625,7 +2625,7 @@ A log has to be active see prLogDir()
 Look at "Using the template" and "Restoring the document from the log" in
 the tutorial for an example.
 
-=head2 prLogDir		- set directory for the log
+=head2 prLogDir     - set directory for the log
 
    prLogDir ( $directory )
 
@@ -2651,7 +2651,7 @@ In this example a log file with the name 'myFile.pdf.dat' is created in the
 directory 'C:\run'. If that directory doesn't exist, the system tries to create it.
 (But, just as mkdir does, it only creates the last level in a directory tree.)
 
-=head2 prMbox		- define the format (MediaBox) for a new page.
+=head2 prMbox       - define the format (MediaBox) for a new page.
 
    prMbox ( $lowerLeftX, $lowerLeftY, $upperRightX, $upperRightY )
 
@@ -2661,7 +2661,7 @@ Only for new pages. Pages created with prDoc and prSinglePage keep their media b
 See prForm() for an example.
 
 
-=head2 prPage		- create/insert a page
+=head2 prPage       - create/insert a page
 
    prPage ($noLog)
 
@@ -2736,7 +2736,7 @@ Courier-BoldOblique, Helvetica, Helvetica-Bold, Helvetica-Oblique,
 Helvetica-BoldOblique or with a TrueType font embedded with prTTFont. If some other font is
 given, Helvetica is used, and the returned value will at the best be approximate.
 
-=head2 prText		- add a text-string
+=head2 prText       - add a text-string
 
    prText ( $x, $y, $string, $align, $rotation )
 
@@ -2846,7 +2846,7 @@ modules installed.
 
 =over 2
 
-=item prBar		- define and paint bars for bar fonts
+=item prBar     - define and paint bars for bar fonts
 
    prBar ($x, $y, $string)
 
@@ -2876,7 +2876,7 @@ not write anything to the current page.
 B<An easier and often better way to produce bar codes is to use PDF::Reuse::Barcode.>
 Look at that module!
 
-=item prCid		- define time stamp/check id
+=item prCid     - define time stamp/check id
 
    prCid ( $timeStamp )
 
@@ -2888,14 +2888,14 @@ time stamp
 
 
 
-=item prId		- define id-string of a PDF document
+=item prId      - define id-string of a PDF document
 
    prId ( $string )
 
 An internal function. Don't bother about it. It is used e.g. when a document is
 restored and an id has to be set, not calculated.
 
-=item prIdType		- define id-type
+=item prIdType      - define id-type
 
    prIdType ( $string )
 
@@ -2906,7 +2906,7 @@ Normally you don't use this function. Then an id is calculated with the help of
 Digest::MD5::md5_hex and some data from the run.
 
 
-=item prTouchUp		- make changes and reuse more difficult
+=item prTouchUp     - make changes and reuse more difficult
 
    prTouchUp (1);
 
@@ -2931,7 +2931,7 @@ So it is more or less deprecated as these function have developed.
 (To encrypt your documents: use the batch utility within Acrobat)
 
 
-=item prVers		- check version of log and program
+=item prVers        - check version of log and program
 
    prVers ( $versionNo )
 
