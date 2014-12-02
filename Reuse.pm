@@ -990,8 +990,8 @@ sub skrivSida
 
     my $tSida = $sida + 1;
     if ((@annots)
-    || (defined @{$links{'-1'}})
-    || (defined @{$links{$tSida}}))
+    || (%links && @{$links{'-1'}})
+    || (%links && @{$links{$tSida}}))
     {  $sidObjekt .= '/Annots ' . mergeLinks() . ' 0 R';
     }
     if (defined $AAPageSaved)
