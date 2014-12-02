@@ -11,7 +11,7 @@ how to transform simple PDF-pages to graphic Perl objects with the help of
 programs based on this module.
 
 The module is fairly fast, so it should be possible to used it for mass
-production. 
+production.
 
 Usage e.g. for a long list:
 
@@ -26,7 +26,7 @@ Usage e.g. for a long list:
                       lastName  => 'Versen' },
                     { firstName => 'Niclas',
                       lastName  => 'Lindberg' },
-             
+
                     # and 10000 more records
 
                     { firstName => 'Sten',
@@ -63,20 +63,22 @@ This module requires these other modules:
   Digest::MD5
   Exporter
   AutoLoader
-  
+
 If you want to use true type fonts and non-Latin1 Unicode characters you also
 need theese optional modules
 
   Font::TTF
   Text::PDF::TTFont0  (Part of Text::PDF distribution)
-  
+
 
 
 COPYRIGHT AND LICENCE
 
 Copyright (C) 2003 - 2004 Lars Lundberg, Solidez HB.
 Copyright (C) 2005 - 2007 Karin Lundberg. All rights reserved.
-Copyright (C) 2008 -      Lars Lundberg, Solidez HB.
+Copyright (C) 2008 - 2010 Lars Lundberg, Solidez HB.
+Copyright (C) 2014 Chris Nighswonger.
+
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 
+it under the same terms as Perl itself.
 

@@ -15,5 +15,7 @@ WriteMakefile(
                           Font::TTF   => 0},
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM => 'Reuse.pm', 
-       AUTHOR     => 'Lars Lundberg LARSLUND@CPAN.ORG') : ()),
+       AUTHOR     => [  'Lars Lundberg LARSLUND@CPAN.ORG',
+                        'Chris Nighswonger CNIGHS@CPAN.ORG',
+                     ]) : ()),
 );
