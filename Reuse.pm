@@ -2490,6 +2490,7 @@ follows the same foramt. Returns the B<$internalName>
    my $file = 'myImage.jpg';
    my $info = image_info($file);
    my ($width, $height) = dim($info);    # Get the dimensions
+   my $colortype = $info->{color_type};  # get color space
 
    my $alt_file = 'myImage.jpg';
    my $alt_info = image_info($alt_file);
@@ -3876,7 +3877,13 @@ sub prAltJpeg
 }
 
 sub prJpeg
-{  my ($iData, $iWidth, $iHeight, $iFormat, $altArrayObjNr) = @_;
+{  my ($iData, $iWidth, $iHeight, $iFormat, $iColorType, $altArrayObjNr) = @_;
+   if ($iColorType =~ /Gray/i)
+   {  $iColorType = 'DeviceGray';
+   }
+   else
+   {  $iColorType = 'DeviceRGB';
+   }
    my ($iLangd, $namnet, $utrad);
    if (! $pos)                    # If no output is active, it is no use to continue
    {   return undef;
@@ -3897,7 +3904,7 @@ sub prJpeg
           $utrad = "$objNr 0 obj\n<</Type/XObject/Subtype/Image/Name/$namnet" .
                     "/Width $iWidth /Height $iHeight /BitsPerComponent 8 " .
                     ($altArrayObjNr ? "/Alternates $altArrayObjNr 0 R " : "") .
-                    "/Filter/DCTDecode/ColorSpace/DeviceRGB"
+                    "/Filter/DCTDecode/ColorSpace/$iColorType"
                     . "/Length $iLangd >>stream\n$iStream\nendstream\nendobj\n";
           close BILDFIL;
           $pos += syswrite UTFIL, $utrad;
@@ -3918,7 +3925,7 @@ sub prJpeg
       $utrad = "$objNr 0 obj\n<</Type/XObject/Subtype/Image/Name/$namnet" .
                 "/Width $iWidth /Height $iHeight /BitsPerComponent 8 " .
                 ($altArrayObjNr ? "/Alternates $altArrayObjNr 0 R " : "") .
-                "/Filter/DCTDecode/ColorSpace/DeviceRGB"
+                "/Filter/DCTDecode/ColorSpace/$iColorType"
                 . "/Length $iLangd >>stream\n$iBlob\nendstream\nendobj\n";
       $pos += syswrite UTFIL, $utrad;
       if ($runfil)
@@ -3936,7 +3943,13 @@ sub prJpeg
 }
 
 sub prJpegBlob
-{  my ($iData, $iWidth, $iHeight, $iFormat, $altArrayObjNr) = @_;
+{  my ($iData, $iWidth, $iHeight, $iFormat, $iColorType, $altArrayObjNr) = @_;
+   if ($iColorType =~ /Gray/i)
+   {  $iColorType = 'DeviceGray';
+   }
+   else
+   {  $iColorType = 'DeviceRGB';
+   }
    my ($iLangd, $namnet, $utrad);
    if (! $PDF::Reuse::pos)                    # If no output is active, it is no use to continue
    {   return;
@@ -3957,7 +3970,7 @@ sub prJpegBlob
           $utrad = "$PDF::Reuse::objNr 0 obj\n<</Type/XObject/Subtype/Image/Name/$namnet" .
                     "/Width $iWidth /Height $iHeight /BitsPerComponent 8 " .
                     ($altArrayObjNr ? "/Alternates $altArrayObjNr 0 R " : "") .
-                    "/Filter/DCTDecode/ColorSpace/DeviceRGB"
+                    "/Filter/DCTDecode/ColorSpace/$iColorType"
                     . "/Length $iLangd >>stream\n$iStream\nendstream\nendobj\n";
           close $fh;
           $PDF::Reuse::pos += syswrite $PDF::Reuse::UTFIL, $utrad;
@@ -3979,7 +3992,7 @@ sub prJpegBlob
       $utrad = "$PDF::Reuse::objNr 0 obj\n<</Type/XObject/Subtype/Image/Name/$namnet" .
                 "/Width $iWidth /Height $iHeight /BitsPerComponent 8 " .
                 ($altArrayObjNr ? "/Alternates $altArrayObjNr 0 R " : "") .
-                "/Filter/DCTDecode/ColorSpace/DeviceRGB"
+                "/Filter/DCTDecode/ColorSpace/$iColorType"
                 . "/Length $iLangd >>stream\n$iBlob\nendstream\nendobj\n";
       $PDF::Reuse::pos += syswrite *PDF::Reuse::UTFIL, $utrad;
       if ($PDF::Reuse::runfil)
