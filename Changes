@@ -4,6 +4,7 @@ Revision history for Perl extension PDF::Reuse.
      Added binary blob handling to prJpeg.
      Added prAltJpeg to allow for insertion of alternate low-res images for display.
      Added support for grayscale images to prJpeg after suggestions from Ingo Lachmann
+     Removing depricated define(@array) syntax per suggestion from Nigel Gourlay
 
 0.35 Mon Jul 3 2008
      Thanks to Yunliang Yu Outlines mode is turned on, if bookmarks are added
