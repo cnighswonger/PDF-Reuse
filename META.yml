@@ -6,7 +6,7 @@ license:             ~
 author:
     - Lars Lundberg LARSLUND@CPAN.ORG
     - Chris Nighswonger CNIGHS@CPAN.ORG
-generated_by:        ExtUtils::MakeMaker version 6.42_01
+generated_by:        ExtUtils::MakeMaker version 6.42_02
 distribution_type:   module
 requires:
     AutoLoader:                    0
