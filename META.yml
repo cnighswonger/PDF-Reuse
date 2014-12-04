@@ -2,7 +2,7 @@
 name:                PDF-Reuse
 version:             0.35_01
 abstract:            Reuse and mass produce PDF documents
-license:             ~
+license:             perl
 author:
     - Lars Lundberg LARSLUND@CPAN.ORG
     - Chris Nighswonger CNIGHS@CPAN.ORG
