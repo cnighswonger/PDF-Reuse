@@ -15,6 +15,8 @@ use Compress::Zlib qw(compress inflateInit);
 use autouse 'Data::Dumper'   => qw(Dumper);
 use AutoLoader qw(AUTOLOAD);
 
+## NOTE: Section numbers found in the comments refer to ISO 32000-1:2008
+
 our $VERSION = '0.35_02';
 our @ISA     = qw(Exporter);
 our @EXPORT  = qw(prFile
@@ -506,10 +508,16 @@ sub prText
      my $Sin    = sprintf("%.6f", sin($radian));
      my $negSin = $Sin * -1;
 
+     #FIXME these need to be caller-supplied parameters
+     my $Tc = 0;    # set character spacing to zero (default) §9.3.2
+     my $Tw = 0;    # set word spacing to zero (default) §9.3.3
+
      my $encText = $ttfont ? $ttfont->encode_text($TxT) : "\($TxT\)";
      $stream .=   "\nq\n"                           # enter a new stack frame
                 # . "/Gs0 gs\n"                             # reset graphic mode
-                . "$Cos $Sin $negSin $Cos $xPos $yPos cm\n" # rotation/translation in the CM
+                . "$Cos $Sin $negSin $Cos $xPos $yPos cm\n" # rotation/translation in the CTM (Current Transformation Matrix) §8.4.4
+                . "$Tc Tc\n"                                # set character spacing
+                . "$Tw Tw\n"                                # set word spacing
                 . "\nBT /$Font $fontSize Tf "
                 . "$x_align_offset 0 Td $encText Tj ET\n"   # text @ 0,0
                 . "Q\n";                                    # close the stack frame
