@@ -6407,7 +6407,7 @@ sub sidAnalys
 
    if (%links)
    {   my $tSida = $sida + 1;
-       if (defined (@{$links{'-1'}}) || (defined @{$links{$tSida}}))
+       if ((%links && @{$links{'-1'}}) || (%links && @{$links{$tSida}}))
        {   if ($del1 =~ m'/Annots\s*([^\/\<\>]+)'os)
            {  $Annots  = $1;
               @annots = ();
