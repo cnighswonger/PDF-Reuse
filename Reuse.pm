@@ -1260,6 +1260,9 @@ sub prStrWidth
    my $FontSize = shift || $fontSize;
    my $w = 0;
 
+   #FIXME: We need to have more robust error trapping and communication of that back to the caller
+   return unless $string; # there's no use continuing if no string is passed in
+
    if(my($width) = ttfStrWidth($string, $Font, $FontSize))
    {  return $width;
    }
