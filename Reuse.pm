@@ -3281,11 +3281,12 @@ sub descend
 
      if (exists $entry{'act'})
      {   my $code = $entry{'act'};
-         if ($code =~ m/^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$/os)
-         {  # $code = "this.pageNum = $1; this.scroll($2, $3);";
-              $code = "this.pageNum = $1;".($3?" this.scroll($2, $3);":"");
+#         if ($code =~ m/^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$/os)
+         if ($code =~ m/^\s*(\d+)\s*$/os)
+         {
+              $code = $1;
          }
-         $jsObj = skrivJS($code);
+         $rad = "/Dest [$code /XYZ null null null] ";
      }
 
      $objekt[$me] = $pos;
