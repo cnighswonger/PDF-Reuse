@@ -1614,6 +1614,7 @@ The module doesn't make any attempt to import anything from encrypted files.
 To write a program with PDF::Reuse, you need these components:
 
 =begin html
+
 <style>
  pre span.comment {
   color:AA0000 ;
