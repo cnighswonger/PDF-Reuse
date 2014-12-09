@@ -4288,18 +4288,24 @@ sub xRefs
       }
       if ($buf =~ m'\bstartxref\s+(\d+)'o)
       {  $xref = $1;
-         while ($xref)
-         {  $res = sysseek INFIL, $xref, 0;
-            $res = sysread INFIL, $buf, 200;
-            if ($buf =~ m '^\d+\s\d+\sobj'os)
-            {  ($xref, $tempRoot, $nr) = crossrefObj($nr, $xref);
+         if ($xref <= $bytes)
+         {
+            while ($xref)
+            {  $res = sysseek INFIL, $xref, 0;
+               $res = sysread INFIL, $buf, 200;
+               if ($buf =~ m '^\d+\s\d+\sobj'os)
+               {  ($xref, $tempRoot, $nr) = crossrefObj($nr, $xref);
+               }
+               else
+               {  ($xref, $tempRoot, $nr) = xrefSection($nr, $xref, $infil);
+               }
+               if (($tempRoot) && (! $Root))
+               {  $Root = $tempRoot;
+               }
             }
-            else
-            {  ($xref, $tempRoot, $nr) = xrefSection($nr, $xref, $infil);
-            }
-            if (($tempRoot) && (! $Root))
-            {  $Root = $tempRoot;
-            }
+         }
+         else
+         {  errLog("Invalid XREF, aborting");
          }
       }
    }
