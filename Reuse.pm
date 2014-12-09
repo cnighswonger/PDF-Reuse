@@ -741,7 +741,7 @@ sub prDefaultGrState
 # En font lokaliseras och fontobjektet skrivs ev. ut
 ######################################################
 
-sub findFont()
+sub findFont
 {  no warnings;
    my $Font = shift || '';
 
