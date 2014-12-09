@@ -949,7 +949,7 @@ sub skrivSida
         {  $objNr++;
            $objekt[$objNr] = $pos;
 
-           $stream = "\nq\n1 0 0 1 $devX $devY cm\n/Xwq Do\nq\n";
+           $stream = "\nq\n1 0 0 1 $devX $devY cm\n/Xwq Do\nQ\n";
            $langd = length($stream);
            $confuseObj = $objNr;
            $stream = "$objNr 0 obj<</Length $langd>>stream\n" . "$stream";
