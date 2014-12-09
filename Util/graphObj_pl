@@ -1,3 +1,4 @@
+use warnings;
 use strict;
 
 my $infile  = shift || die "You have to give a pdf-file as an argument, aborts\n";
@@ -13,7 +14,7 @@ my $round = 1;
 ##############################
 # Counters for PDF operators
 ##############################
- 
+
 my %graphOp = (c   => 0,
                cm  => 0,
                CS  => 0,
@@ -32,7 +33,7 @@ my %graphOp = (c   => 0,
                m   => 0,
                M   => 0,
                re  => 0,
-               rg  => 0, 
+               rg  => 0,
                RG  => 0,
                sc  => 0,
                SC  => 0,
@@ -49,7 +50,7 @@ my %graphOp = (c   => 0,
 #####################################
 # Descriptions of PDF operators
 #####################################
- 
+
 my %descr = (c   => 'curv',
              cm  => 'matrix',
              CS  => 'strokeColSpace',
@@ -68,7 +69,7 @@ my %descr = (c   => 'curv',
              m   => 'moveTo',
              M   => 'miter',
              re  => 'rectangle',
-             rg  => 'fillRGB', 
+             rg  => 'fillRGB',
              RG  => 'strokeRGB',
              sc  => 'fillCol',
              SC  => 'strokeCol',
@@ -104,21 +105,21 @@ else
 open (infile, "<$infile") || die "Couldn't open $infile, aborts, $!";
 open (VALFILE, ">$valFile") || die "Couldn't open $valFile, aborts, $!";
 
-          
+
 while ($line = <infile>)
 {  if ($yes)
    {   if ($line =~ m'\bendstream\b'o)
        {  last;
        }
        else
-       {   
+       {
            $long .= $line;
        }
    }
    elsif ($line =~ m'\bstream\b'o)
    {  $yes = 1;
    }
-} 
+}
 close infile;
 
 
@@ -157,7 +158,7 @@ for $line (@lines)
        print VALFILE "$name => '$x1 $y1',\n";
        $stream .= '   $self->{\'' . $name . '\'} = ' . "'$x1 $y1';\n";
        @list = ($name, $3);
-          
+
     }
     elsif ($line =~ m'^([\d\.\-]+)\s+([\d\.\-]+)\s+([\d\.\-]+)\s+([\d\.\-]+)\s+([vy])$'o)
     {  $x1 = examineX($1);
@@ -187,7 +188,7 @@ for $line (@lines)
     {  $x1 = examineX($1);
        $y1 = examineY($2);
        $graphOp{'re'}++;
-       $name = $descr{'re'} . $graphOp{'re'}; 
+       $name = $descr{'re'} . $graphOp{'re'};
        print VALFILE "$name => '$x1 $y1 $3 $4',\n";
        $stream .= '   $self->{\'' . $name . '\'} = ' . "'$x1 $y1 $3 $4';\n";
        @list = ($name, 're');
@@ -227,12 +228,12 @@ for $line (@lines)
            @list = ($name," $num $op");
         }
     }
-    else 
+    else
     {   if ($line =~ m'^(.+)\s+(\w+)$'o)
         {  if (exists $graphOp{$2})
            {  $name    = entry($1, $2);
               $stream .=  '   $self->{\'' . $name . '\'} = ' . "'$1';\n";
-              @list = ($name, $2);           
+              @list = ($name, $2);
            }
            else
            {  @list = ('x', $line);
@@ -266,7 +267,7 @@ $declare = "package $packName;\n" .
 
 $xMax -= $xMin;
 $yMax -= $yMin;
- 
+
 $declare .= "sub new\n" .
             '{  my $class = shift;' . "\n" .
             '   my $model = shift;' . "\n" .
@@ -284,13 +285,13 @@ $declare .= "sub new\n" .
             '   $self->init();' . "\n";
 
 if (scalar %extObj)
-{   
+{
     for my $key (keys %extObj)
-    {   $declare .= '   $self->{\'' . "$key'}->{'oldName'} = '$extObj{$key}->{'oldName'}';\n" .    
+    {   $declare .= '   $self->{\'' . "$key'}->{'oldName'} = '$extObj{$key}->{'oldName'}';\n" .
                     '   $self->{\'' . "$key'}->{'file'}  = '$extObj{$key}->{'file'}';\n" .
                     '   $self->{\'' . "$key'}->{'page'}  = $extObj{$key}->{'page'};\n";
     }
-    
+
 }
 $declare .= '   if (defined $model)' . "\n" .
             '   {   for (keys %$model)' . "\n" .
@@ -299,7 +300,7 @@ $declare .= '   if (defined $model)' . "\n" .
             '   }' . "\n" .
             '   return $self;' . "\n" .
             '}' . "\n\n";
-                
+
 
 $declare .= "sub draw\n" .
             '{  my $self  = shift;' . "\n" .
@@ -316,11 +317,11 @@ $declare .= "sub draw\n" .
 if (scalar %extObj)
 {   $declare .= '   $self->resources();' . "\n";
 }
-$declare .= '   $self->{\'xSize\'} = 1 unless ($self->{\'xSize\'} != 0);' . "\n"; 
+$declare .= '   $self->{\'xSize\'} = 1 unless ($self->{\'xSize\'} != 0);' . "\n";
 $declare .= '   $self->{\'ySize\'} = 1 unless ($self->{\'ySize\'} != 0);' . "\n";
 $declare .= '   $self->{\'size\'}  = 1 unless ($self->{\'size\'}  != 0);' . "\n";
 
-$declare .= '   $xSize = $self->{\'xSize\'} * $self->{\'size\'};' . "\n"; 
+$declare .= '   $xSize = $self->{\'xSize\'} * $self->{\'size\'};' . "\n";
 $declare .= '   $ySize = $self->{\'ySize\'} * $self->{\'size\'};' . "\n";
 $declare .= '   $str .= "q\n";' . "\n" .
             '   $str .= ' . '"$xSize 0 0 $ySize $x $y cm\n";' . "\n";
@@ -354,7 +355,7 @@ $declare .= '    PDF::Reuse::prAdd($str);' . "\n" .
 
 open (outfile, ">$outfile") || die "Couldn't open $outfile, aborts $!\n";
 
-syswrite outfile, $declare; 
+syswrite outfile, $declare;
 syswrite outfile, $stream;
 
 $stream = "sub resources\n" .
@@ -365,7 +366,7 @@ for my $key (keys %extObj)
     {   $stream .= '   if (exists $self->{\'font\'})' . "\n" .
                    '   {   $self->{\'' . "$key\'\}->{'newName'} = PDF::Reuse::prFont("
                                      . '$self->{\'' . "font'});\n" .
-                   '   }' . "\n" .    
+                   '   }' . "\n" .
                    '   else' . "\n" .
                    '   {   $answer = PDF::Reuse::prExtract(' .
                                      '$self->{\'' . "$key\'\}->{'oldName'}," .
@@ -376,7 +377,7 @@ for my $key (keys %extObj)
                    "       }\n" .
                    "       else\n" .
                    '       {   $self->{\'font\'} = \'H\';' . "\n" .
-                   '           $self->{\'' . "$key\'\}->{'newName'} = PDF::Reuse::prFont('H');\n" . 
+                   '           $self->{\'' . "$key\'\}->{'newName'} = PDF::Reuse::prFont('H');\n" .
                    "       }\n" .
                    "    }\n";
     }
@@ -384,7 +385,7 @@ for my $key (keys %extObj)
     {   $stream .= '   if ((exists $self->{\'defaultGraphState\'})' . "\n" .
                    '   ||  ($self->{\'' . "$key\'\}->{'newName'} eq 'Gs0'))\n" .
                    '   {   $self->{\'' . "$key\'\}->{'newName'} = 'Gs0';\n" .
-                   '   }' . "\n" .    
+                   '   }' . "\n" .
                    '   else' . "\n" .
                    '   {   $answer = PDF::Reuse::prExtract(' .
                                      '$self->{\'' . "$key\'\}->{'oldName'}," .
@@ -394,7 +395,7 @@ for my $key (keys %extObj)
                    '       {   $self->{\'' . "$key\'\}->{'newName'} = " . '$answer;' . "\n" .
                    "       }\n" .
                    "       else\n" .
-                   '       {   $self->{\'' . "$key\'\}->{'newName'} = 'Gs0';\n" . 
+                   '       {   $self->{\'' . "$key\'\}->{'newName'} = 'Gs0';\n" .
                    "       }\n" .
                    "    }\n";
     }
@@ -414,7 +415,7 @@ for my $key (keys %extObj)
     }
 
 }
-  
+
 $stream .= '}' . "\n\n";
 
 $stream .= "sub originalDim\n" .
@@ -454,12 +455,12 @@ sub examineX
     }
     if ($round)
     {  $x = sprintf("%.1f", $x);
-    } 
+    }
     if ($x > $xMax)
     {  $xMax = $x;
     }
     return $x;
- 
+
 }
 
 sub examineY
@@ -469,12 +470,12 @@ sub examineY
     }
     if ($round)
     {  $y = sprintf("%.1f", $y);
-    } 
+    }
     if ($y > $yMax)
     {  $yMax = $y;
     }
     return $y;
-  
+
 }
 
 sub entry
@@ -489,5 +490,23 @@ sub entry
    }
    return $seen{$combination};
 }
-   
-       
+
+__END__
+
+=head1 AUTHOR
+
+Lars Lundberg larslund@cpan.org
+Chris Nighswonger cnighs@cpan.org
+
+=head1 COPYRIGHT
+
+Copyright (C) 2003 - 2004   Lars Lundberg, Solidez HB.
+Copyright (C) 2005          Karin Lundberg.
+Copyright (C) 2006 - 2010   Lars Lundberg, Solidez HB.
+Copyright (C) 2010 - 2014   Chris Nighswonger
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
