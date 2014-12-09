@@ -4527,7 +4527,8 @@ sub xrefSection
     }
 
     while ($inrad)
-    {   if ($buf =~ m'Encrypt'o)
+    {   $buf .= $inrad;
+        if ($buf =~ m'Encrypt'o)
         {  errLog("The file $infil is encrypted, cannot be used, aborts");
         }
         if ((! $root) && ($buf =~ m'\/Root\s+(\d+)\s{1,2}\d+\s{1,2}R'so))
@@ -4546,7 +4547,6 @@ sub xrefSection
         {  last; }
 
         sysread INFIL, $inrad, 30;
-        $buf .= $inrad;
     }
     return ($xref, $root, $nr);
 }
