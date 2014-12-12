@@ -3291,7 +3291,7 @@ sub descend
      }
      if (exists $entry{'act'})
      {   my $code = $entry{'act'};
-         if ($code =~ m/^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$/os)
+         if ($code =~ m/(\d+)/os)
          {
               $code = $1;
          }
