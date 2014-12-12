@@ -3279,15 +3279,6 @@ sub descend
         }
      }
 
-     if (exists $entry{'act'})
-     {   my $code = $entry{'act'};
-#         if ($code =~ m/^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$/os)
-         if ($code =~ m/^\s*(\d+)\s*$/os)
-         {
-              $code = $1;
-         }
-         $rad = "/Dest [$code /XYZ null null null] ";
-     }
 
      $objekt[$me] = $pos;
      $rad = "$me 0 obj<<";
@@ -3297,6 +3288,14 @@ sub descend
      $rad .= "/Parent $parent 0 R";
      if (defined $jsObj)
      {  $rad .= "/A $jsObj 0 R";
+     }
+     if (exists $entry{'act'})
+     {   my $code = $entry{'act'};
+         if ($code =~ m/^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$/os)
+         {
+              $code = $1;
+         }
+         $rad .= "/Dest [$code /XYZ null null null] ";
      }
      if (exists $entry{'previous'})
      {  $rad .= "/Prev $entry{'previous'} 0 R";
