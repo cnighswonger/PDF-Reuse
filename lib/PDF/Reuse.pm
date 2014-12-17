@@ -847,7 +847,7 @@ sub skrivSida
    if (scalar %sidFont)
    {  $resursDict .= '/Font << ';
       my $i = 0;
-      for (keys %sidFont)
+      for (sort keys %sidFont)
       {  $resursDict .= "/$_ $sidFont{$_} 0 R";
       }
 
@@ -855,35 +855,35 @@ sub skrivSida
    }
    if (scalar %sidXObject)
    {  $resursDict .= '/XObject<<';
-      for (keys %sidXObject)
+      for (sort keys %sidXObject)
       {  $resursDict .= "/$_ $sidXObject{$_} 0 R";
       }
       $resursDict .= ">>";
    }
    if (scalar %sidExtGState)
    {  $resursDict .= '/ExtGState<<';
-      for (keys %sidExtGState)
+      for (sort keys %sidExtGState)
       {  $resursDict .= "\/$_ $sidExtGState{$_} 0 R";
       }
       $resursDict .= ">>";
    }
    if (scalar %sidPattern)
    {  $resursDict .= '/Pattern<<';
-      for (keys %sidPattern)
+      for (sort keys %sidPattern)
       {  $resursDict .= "/$_ $sidPattern{$_} 0 R";
       }
       $resursDict .= ">>";
    }
    if (scalar %sidShading)
    {  $resursDict .= '/Shading<<';
-      for (keys %sidShading)
+      for (sort keys %sidShading)
       {  $resursDict .= "/$_ $sidShading{$_} 0 R";
       }
       $resursDict .= ">>";
    }
    if (scalar %sidColorSpace)
    {  $resursDict .= '/ColorSpace<<';
-      for (keys %sidColorSpace)
+      for (sort keys %sidColorSpace)
       {  $resursDict .= "/$_ $sidColorSpace{$_} 0 R";
       }
       $resursDict .= ">>";
@@ -6281,7 +6281,7 @@ sub sidAnalys
 
        if (scalar %sidFont)
        {  my $str = '';
-          for (keys %sidFont)
+          for (sort keys %sidFont)
           {  $str .= "/$_ $sidFont{$_} 0 R";
           }
           if ($resources !~ m'\/Font'os)
@@ -6294,7 +6294,7 @@ sub sidAnalys
 
        if (scalar %sidXObject)
        {  my $str = '';
-          for (keys %sidXObject)
+          for (sort keys %sidXObject)
           {  $str .= "/$_ $sidXObject{$_} 0 R";
           }
           if ($resources !~ m'\/XObject'os)
@@ -6307,7 +6307,7 @@ sub sidAnalys
 
        if (scalar %sidExtGState)
        {  my $str = '';
-          for (keys %sidExtGState)
+          for (sort keys %sidExtGState)
           {  $str .= "/$_ $sidExtGState{$_} 0 R";
           }
           if ($resources !~ m'\/ExtGState'os)
@@ -6320,7 +6320,7 @@ sub sidAnalys
 
        if (scalar %sidPattern)
        {  my $str = '';
-          for (keys %sidPattern)
+          for (sort keys %sidPattern)
           {  $str .= "/$_ $sidPattern{$_} 0 R";
           }
           if ($resources !~ m'\/Pattern'os)
@@ -6333,7 +6333,7 @@ sub sidAnalys
 
        if (scalar %sidShading)
        {  my $str = '';
-          for (keys %sidShading)
+          for (sort keys %sidShading)
           {  $str .= "/$_ $sidShading{$_} 0 R";
           }
           if ($resources !~ m'\/Shading'os)
@@ -6346,7 +6346,7 @@ sub sidAnalys
 
        if (scalar %sidColorSpace)
        {  my $str = '';
-          for (keys %sidColorSpace)
+          for (sort keys %sidColorSpace)
           {  $str .= "/$_ $sidColorSpace{$_} 0 R";
           }
           if ($resources !~ m'\/ColorSpace'os)
