@@ -297,6 +297,9 @@ sub prFile
    elsif (IS_MODPERL && $utfil eq '-')     # mod_perl 1
    { tie *UTFIL, 'Apache';
    }
+   elsif ($utfil_ref and $utfil_ref eq 'IO::String')
+   { tie *UTFIL, $utfil;
+   }
    else
    { open (UTFIL, ">$utfil") || errLog("Couldn't open file $utfil, $!");
    }
