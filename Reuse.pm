@@ -297,6 +297,9 @@ sub prFile
    elsif (IS_MODPERL && $utfil eq '-')     # mod_perl 1
    { tie *UTFIL, 'Apache';
    }
+   elsif ($utfil_ref and $utfil_ref eq 'IO::String')
+   { tie *UTFIL, $utfil;
+   }
    else
    { open (UTFIL, ">$utfil") || errLog("Couldn't open file $utfil, $!");
    }
@@ -2480,9 +2483,9 @@ internal tables, are initiated.
 
    prAltJpeg ( $imageData, $width, $height, $format, $altImageData, $altWidth, $altHeight, $altFormat )
 
-B<$imageFile> contains 1 single jpeg-image. B<$width> and B<$height>
+B<$imageData> contains 1 single jpeg-image. B<$width> and B<$height>
 also have to be specified. B<$format> indicates the format the image
-data takes: 0 for file, 1 for binary string. B<$altImageFile> etc.
+data takes: 0 for file, 1 for binary string. B<$altImageData> etc.
 follows the same foramt. Returns the B<$internalName>
 
    use PDF::Reuse;
@@ -2520,7 +2523,7 @@ follows the same foramt. Returns the B<$internalName>
 
    prJpeg ( $imageData, $width, $height, $format )
 
-B<$imageFile> contains 1 single jpeg-image. B<$width> and B<$height>
+B<$imageData> contains 1 single jpeg-image. B<$width> and B<$height>
 also have to be specified. B<$format> indicates the format the image
 data takes: 0 for file, 1 for binary string. Returns the B<$internalName>
 
