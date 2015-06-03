@@ -1525,6 +1525,17 @@ sub text_width
    return $self->{ttfont}->width($text) * $size;
 }
 
+sub DESTROY
+{  my $self = shift;
+   if(my $ttfont = $self->{ttfont})
+   {  if(my $font = delete $ttfont->{' font'})
+      { $font->release();
+      }
+      $ttfont->release();
+   }
+   %$self = ();
+}
+
 
 package PDF::Reuse;  # Applies to the autoloaded methods below (?)
 
