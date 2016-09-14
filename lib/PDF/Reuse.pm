@@ -318,7 +318,7 @@ sub prFile
        else
        {  $runfil = $ldir . $filnamn  . '.dat';
        }
-       open (RUNFIL, ">>$runfil") || errLog("Couldn't open loggfile $runfil, $!");
+       open (RUNFIL, ">>$runfil") || errLog("Couldn't open logfile $runfil, $!");
        $log .= "Vers~$VERSION\n";
    }
 
@@ -6897,7 +6897,7 @@ sub errLog
     my $lutfil = $utfil || 'undef';
 
     my $lrunfil = $runfil || 'undef';
-    open (ERRLOG, ">$errLog") || croak "$mess can't open an error logg, $!";
+    open (ERRLOG, ">$errLog") || croak "$mess can't open an error log, $!";
     print ERRLOG "\n$mess\n\n";
     print ERRLOG Carp::longmess("The error occurred when executing:\n");
     print ERRLOG "\nSituation when the error occurred\n\n";
