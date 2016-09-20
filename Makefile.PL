@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile1(
     'NAME'          => 'PDF::Reuse',
-    'VERSION_FROM'  => 'Reuse.pm', 
+    'VERSION_FROM'  => 'lib/PDF/Reuse.pm', 
     'PREREQ_PM'     => { Digest::MD5    => 0,
                           Compress::Zlib => 0,
                           Carp           => 0,
@@ -23,7 +23,7 @@ WriteMakefile1(
     TEST_REQUIRES => {
         'Test' => 0,
     },
-    ABSTRACT_FROM => 'Reuse.pm', 
+    ABSTRACT_FROM => 'lib/PDF/Reuse.pm', 
     AUTHOR     => [  'Lars Lundberg LARSLUND@CPAN.ORG',
                         'Chris Nighswonger CNIGHS@CPAN.ORG',
                      ],
