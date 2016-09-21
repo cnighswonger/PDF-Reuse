@@ -4379,6 +4379,9 @@ sub crossrefObj
        {  $param{$1} = $2 || ' ';
        }
     }
+    if (!exists $param{'Index'})
+    {  $param{'Index'} = "[0 $param{'Size'}]";
+    }
     if ((exists $param{'Root'}) && ($param{'Root'} =~ m'^\s*(\d+)'o))
     {  $tempRoot = $1;
     }
