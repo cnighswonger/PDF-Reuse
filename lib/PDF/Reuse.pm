@@ -3507,10 +3507,10 @@ sub prImage
 
 
 sub prMbox
-{  my $lx = shift || 0;
-   my $ly = shift || 0;
-   my $ux = shift || 595;
-   my $uy = shift || 842;
+{  my $lx = defined($_[0]) ? shift : 0;
+   my $ly = defined($_[0]) ? shift : 0;
+   my $ux = defined($_[0]) ? shift : 595;
+   my $uy = defined($_[0]) ? shift : 842;
 
    if ((defined $lx) && ($lx =~ m'^[\d\-\.]+$'o))
    { $genLowerX = $lx; }
