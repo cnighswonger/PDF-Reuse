@@ -21,4 +21,4 @@ requires:
   Exporter: '0'
   Font::TTF: '0'
   Text::PDF::TTFont0: '0'
-version: '0.36_04'
+version: '0.37'

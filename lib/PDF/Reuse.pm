@@ -15,7 +15,7 @@ use Compress::Zlib qw(compress inflateInit);
 use autouse 'Data::Dumper'   => qw(Dumper);
 use AutoLoader qw(AUTOLOAD);
 
-our $VERSION = '0.36_04';
+our $VERSION = '0.37';
 our @ISA     = qw(Exporter);
 our @EXPORT  = qw(prFile
                   prPage
