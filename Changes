@@ -1,5 +1,22 @@
 Revision history for Perl extension PDF::Reuse
 
+0.37 Fri Sept 23 2016
+     101145 	Add support for IO::String and "in memory" files
+     107301 	prStrWidth returns undef when string is '0'
+     41287 	It seems that filehandles of TTF files are not closed
+     79703 	Allow a handle to be provided instead of a file name
+     107299 	Warnings on empty strings in prStrWidth/prText
+     117892 	Could not open 'Reuse.pm' (0.36_02)
+     93049 	PDF::Reuse Bookmarks bug and fix
+     97290 	fix for uninitialized value $param{"Index"} when reading PDF version 1.5 file
+     43232 	Wrong prototype for findFont()
+     46202 	PDF-Reuse 0.35 prDoc/xrefSection problem
+     48804 	Bad PDF Spins CPU
+     59359 	qQ imbalance in Reuse.pm
+     104874 	prMbox() not dealing with 0 ux/uy
+
+     Thanks to all who contributed patches for these fixes!
+
 0.36 Wed Dec 10 2014
      Added binary blob handling to prJpeg
      Added prAltJpeg to allow for insertion of alternate low-res images for display
@@ -9,7 +26,7 @@ Revision history for Perl extension PDF::Reuse
 
 0.35 Mon Jul 3 2008
      Thanks to Yunliang Yu Outlines mode is turned on, if bookmarks are added
-     and a minor bug with bookmarks and onother one with the creation of pages
+     and a minor bug with bookmarks and another one with the creation of pages
      are corrected.
 
 0.34 June 2008
