@@ -1,5 +1,8 @@
 Revision history for Perl extension PDF::Reuse
 
+0.38 Mon Sept 26 2016
+     118069: MYMETA must not be included
+
 0.37 Fri Sept 23 2016
      101145 	Add support for IO::String and "in memory" files
      107301 	prStrWidth returns undef when string is '0'
