@@ -4334,6 +4334,7 @@ sub xRefs
 
    ##############################################################
    # Objekten sorteras i fallande ordning (efter offset i filen)
+   # The items are sorted in descending order (after the offset in the file)
    ##############################################################
 
    my @offset = sort { $oldObject{$b} <=> $oldObject{$a} } keys %oldObject;
@@ -5958,6 +5959,7 @@ sub extractObject
 
 ##########################################
 # En fil analyseras och sidorna kopieras
+# Analyze file and copy pages
 ##########################################
 
 sub analysera
@@ -6004,6 +6006,7 @@ sub analysera
    }
    #############
    # Hitta root
+   # Find root
    #############
 
    my $offSet;
@@ -6026,6 +6029,7 @@ sub analysera
 
       #################################################
       #  Finns ett dictionary för Additional Actions ?
+      #  Is there a dictionary for Additional Actions?
       #################################################
       if ($objektet =~ m'/AA(\s+\d+\s{1,2}\d+\s{1,2}R)'os)   # Hänvisning
       {  $AARoot = $1; }
@@ -6052,6 +6056,7 @@ sub analysera
 
    #
    # Hitta pages
+   # Find pages
    #
 
    if ($objektet =~ m'/Pages\s+(\d+)\s{1,2}\d+\s{1,2}R'os)
