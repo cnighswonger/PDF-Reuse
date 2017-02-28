@@ -4479,11 +4479,19 @@ sub xrefSection
     my ($i, $root, $antal);
     $nr++;
     $oldObject{('xref' . "$nr")} = $xref;  # Offset för xref sparas
-    $xref += 5;
     sysseek INFIL, $xref, 0;
+    sysread INFIL, my $buf, 30;
+    if ($buf =~ /xref/) {
+       sysseek INFIL, $xref+$-[0]+5, 0;
+    }
+    else {
+       # If the regexp fails (it shouldn't), fall back to the previous
+       # behaviour.
+       sysseek INFIL, $xref + 5, 0;
+    }
     $xref  = 0;
     my $inrad = '';
-    my $buf   = '';
+    $buf   = '';
     my $c;
     sysread INFIL, $c, 1;
     while ($c =~ m!\s!s)
