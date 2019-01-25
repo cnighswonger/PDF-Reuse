@@ -4563,6 +4563,12 @@ sub xrefSection
         if ($buf =~ m'xref'so)
         {  last; }
 
+        if($inrad=~ m/trailer/o && (! $root) && ($inrad =~ m'\/Root\s+(\d+)\s{1,2}\d+\s{1,2}R'so))
+        { $root = $1;
+          if ($xref)
+          { last; }
+        }
+
         sysread INFIL, $inrad, 30;
     }
     return ($xref, $root, $nr);
