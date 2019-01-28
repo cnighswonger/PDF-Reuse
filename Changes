@@ -1,6 +1,7 @@
 Revision history for Perl extension PDF::Reuse
 
 0.40 Mon Jan 28 2019
+     120459     Uses deprecated defined %hash
      120346	Parsing of refs is too strict
      XXXXXX	This patch corrects a bug whereby the root object of a PDF cannot be found.
      120401	Reads the entire contents when extracting a single page
