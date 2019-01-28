@@ -3752,7 +3752,7 @@ sub prDocForm
   if (($effect eq 'print') && ($form{$fSource}[fVALID]) && ($refNr))
   {   if ((! defined $interActive)
       && ($sidnr == 1)
-      &&  (defined %{$intAct{$fSource}[0]}) )
+      &&  (%{$intAct{$fSource}[0]}) )
       {  $interActive = $infil . ' ' . $sidnr;
          $interAktivSida = 1;
       }
