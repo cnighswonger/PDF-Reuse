@@ -290,6 +290,7 @@ sub prFile
    }
 
    my $utfil_ref = ref $utfil;
+   untie *UTFIL;  # Clear any previous tie (e.g., from IO::String)
    if ($utfil_ref and ($utfil_ref eq 'Apache2::RequestRec') or
                       ($utfil_ref eq 'Apache::RequestRec') ) # mod_perl 2
    { tie *UTFIL, $utfil;
@@ -1093,7 +1094,7 @@ sub prEnd
     $pos += syswrite UTFIL, "0000000000 65535 f \n";
 
     for (my $i = 1; $i <= $antal; $i++)
-    {  $utrad = sprintf "%.10d 00000 n \n", $objekt[$i];
+    {  $utrad = sprintf "%.10d 00000 n \n", $objekt[$i] // 0;
        $pos += syswrite UTFIL, $utrad;
     }
 
@@ -1108,6 +1109,7 @@ sub prEnd
     $pos += syswrite UTFIL, $utrad;
     $pos += syswrite UTFIL, "%%EOF\n";
     close UTFIL;
+    untie *UTFIL;
 
     if ($runfil)
     {   if ($log)
@@ -3750,7 +3752,7 @@ sub prDocForm
   if (($effect eq 'print') && ($form{$fSource}[fVALID]) && ($refNr))
   {   if ((! defined $interActive)
       && ($sidnr == 1)
-      &&  (defined %{$intAct{$fSource}[0]}) )
+      &&  (%{$intAct{$fSource}[0]}) )
       {  $interActive = $infil . ' ' . $sidnr;
          $interAktivSida = 1;
       }
