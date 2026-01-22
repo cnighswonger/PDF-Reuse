@@ -18,14 +18,23 @@ WriteMakefile1(
     LICENSE => 'perl',
     MIN_PERL_VERSION => '5.006',
     META_MERGE => {
+        'meta-spec' => { version => 2 },
         resources => {
-            repository => 'https://github.com/cnighswonger/PDF-Reuse',
+            repository => {
+                type => 'git',
+                url  => 'https://github.com/cnighswonger/PDF-Reuse.git',
+                web  => 'https://github.com/cnighswonger/PDF-Reuse',
+            },
+            bugtracker => {
+                web => 'https://github.com/cnighswonger/PDF-Reuse/issues',
+            },
         },
     },
     TEST_REQUIRES => {
         'Test' 		=> 0,
 	'Test::More'	=> 0,
 	'Test::Deep'	=> 0,
+	'IO::String'	=> 0,
     },
     ABSTRACT_FROM => 'lib/PDF/Reuse.pm', 
     AUTHOR     => [  'Lars Lundberg LARSLUND@CPAN.ORG',

@@ -1,5 +1,9 @@
 Revision history for Perl extension PDF::Reuse
 
+0.41 Thu Jan 22 2026
+     - Add GitHub Issues bugtracker to distribution metadata
+     - Add IO::String to TEST_REQUIRES
+
 0.40 Thu Jan 22 2026
      Bug fixes:
      120459     Uses deprecated defined(%hash) - breaks Perl 5.24+
