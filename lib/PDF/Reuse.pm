@@ -292,7 +292,7 @@ sub prFile
    }
 
    my $utfil_ref = ref $utfil;
-   untie *UTFIL;  # Clear any previous tie (e.g., from IO::String)
+   { no warnings; untie *UTFIL; }  # Clear any previous tie (e.g., from IO::String)
    if ($utfil_ref and ($utfil_ref eq 'Apache2::RequestRec') or
                       ($utfil_ref eq 'Apache::RequestRec') ) # mod_perl 2
    { tie *UTFIL, $utfil;
@@ -996,8 +996,8 @@ sub skrivSida
 
     my $tSida = $sida + 1;
     if ((@annots)
-    || (%links && @{$links{'-1'}})
-    || (%links && @{$links{$tSida}}))
+    || (%links && $links{'-1'} && @{$links{'-1'}})
+    || (%links && $links{$tSida} && @{$links{$tSida}}))
     {  $sidObjekt .= '/Annots ' . mergeLinks() . ' 0 R';
     }
     if (defined $AAPageSaved)
@@ -1111,7 +1111,7 @@ sub prEnd
     $pos += syswrite UTFIL, $utrad;
     $pos += syswrite UTFIL, "%%EOF\n";
     close UTFIL;
-    untie *UTFIL;
+    { no warnings; untie *UTFIL; }
 
     if ($runfil)
     {   if ($log)
@@ -4439,7 +4439,7 @@ sub crossrefObj
                 $j = 1;
              }
              else
-             {  $recTyp = $word[1];
+             {  $recTyp = hex($word[1]);
                 $j = 2;
              }
              my $k = 0;
@@ -6456,7 +6456,7 @@ sub sidAnalys
 
    if (%links)
    {   my $tSida = $sida + 1;
-       if ((%links && @{$links{'-1'}}) || (%links && @{$links{$tSida}}))
+       if ((%links && $links{'-1'} && @{$links{'-1'}}) || (%links && $links{$tSida} && @{$links{$tSida}}))
        {   if ($del1 =~ m|/Annots$ws*([^\/\<\>]+)|os)
            {  $Annots  = $1;
               @annots = ();
