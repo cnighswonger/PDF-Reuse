@@ -29,6 +29,18 @@ WriteMakefile1(
                 web => 'https://github.com/cnighswonger/PDF-Reuse/issues',
             },
         },
+        provides => {
+            'PDF::Reuse' => {
+                file    => 'lib/PDF/Reuse.pm',
+                version => '0.42',
+            },
+            'PDF::Reuse::Util' => {
+                file    => 'lib/PDF/Reuse/Util.pm',
+            },
+        },
+        no_index => {
+            package => [ 'PDF::Reuse::DocProxy', 'PDF::Reuse::TTFont' ],
+        },
     },
     TEST_REQUIRES => {
         'Test' 		=> 0,

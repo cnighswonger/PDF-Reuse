@@ -1,7 +1,10 @@
 Changes
+CONTRIBUTING.md
+LICENSE
 Makefile.PL
 MANIFEST
 README
+SECURITY.md
 lib/PDF/Reuse.pm
 t/test.t
 t/Reuse.t
