@@ -1,0 +1,18 @@
+# Build artifacts
+Makefile
+Makefile.old
+blib/
+pm_to_blib
+MYMETA.*
+
+# Test artifacts
+*.tar.gz
+
+# Editor/IDE files
+*~
+*.swp
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
