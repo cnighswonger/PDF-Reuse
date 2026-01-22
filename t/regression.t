@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 7;
+use Test::More tests => 9;
 use IO::String;
 use File::Temp qw(tempfile);
 
@@ -117,4 +117,38 @@ BEGIN {
     my @numeric_warnings = grep { /isn't numeric/ } @warnings;
     is(scalar @numeric_warnings, 0,
         "RT #83185: No 'isn't numeric' warnings from crossrefObj");
+}
+
+# RT #168975 / GitHub #11
+# prForm() should accept IO::String objects as file input
+{
+    my ($fh, $tmpfile) = tempfile(SUFFIX => '.pdf', UNLINK => 1);
+    close $fh;
+
+    # First, generate a source PDF
+    my ($sfh, $srcfile) = tempfile(SUFFIX => '.pdf', UNLINK => 1);
+    close $sfh;
+    prFile($srcfile);
+    prText(100, 700, 'Source for prForm IO::String test');
+    prEnd();
+
+    # Read it into an IO::String
+    open(my $in, '<', $srcfile) or die "Can't open $srcfile: $!";
+    binmode $in;
+    my $pdf_data = do { local $/; <$in> };
+    close $in;
+    my $io = IO::String->new($pdf_data);
+
+    # Use the IO::String as input to prForm
+    my $ok = eval {
+        prFile($tmpfile);
+        prForm({ file => $io });
+        prEnd();
+        1;
+    };
+    my $err = $@;
+
+    ok($ok, 'RT #168975: prForm() accepts IO::String input')
+        or diag("Error: $err");
+    ok(-s $tmpfile > 0, 'RT #168975: Output PDF has content');
 }

@@ -602,6 +602,24 @@ sub prForm
      $ysize    = shift || 1;
   }
 
+  # Support IO::String and other IO handles as input (RT #168975)
+  if (ref($infil)) {
+     require File::Temp;
+     my $data;
+     if (ref($infil) eq "SCALAR") {
+        $data = $$infil;
+     } else {
+        local $/;
+        $data = <$infil>;
+        seek($infil, 0, 0) if $infil->can("seek");
+     }
+     my ($tmpfh, $tmpfile) = File::Temp::tempfile(SUFFIX => ".pdf", UNLINK => 1);
+     binmode $tmpfh;
+     print $tmpfh $data;
+     close $tmpfh;
+     $infil = $tmpfile;
+  }
+
   my $refNr;
   my $namn;
   $type = 'form';
@@ -2015,6 +2033,8 @@ from the tools menu). Select a line of text somewhere on the page. Right-click t
 mouse. Choose "Attributes".Change font size or anything else, and then you change
 it back to the old value. Save the document.
 If there was no text on the page, use some other "Touch Up" tool.
+Alternatively, use GhostScript to convert multi-stream PDFs (see prForm documentation
+for the command).
 
 
    use PDF::Reuse;
@@ -2163,6 +2183,9 @@ Alternative 2) You put your parameters in this order
 Anyway the function returns in list context:  B<$intName, @BoundingBox,
 $numberOfImages>, in scalar context:  B<$internalName> of the form.
 
+B<file> can be a filename, an IO::String object, a filehandle, or a scalar
+reference to PDF data in memory.
+
 if B<page> is excluded 1 is assumed.
 
 B<adjust>, could be 1, 2 or 0/nothing. If it is 1, the program tries to adjust the
@@ -2243,6 +2266,13 @@ Change font size or anything else, and then you change it back to the old value.
 Save the document. You could alternatively save the file as Postscript and redistill
 it with the distiller or with Ghost script, but this is a little more risky. You
 might loose fonts or something else. Another alternative could be to use prSinglePage().
+
+Alternatively, GhostScript can be used to convert multi-stream PDFs into
+single-stream format compatible with prForm:
+
+    gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/default \
+       -dNOPAUSE -dQUIET -dBATCH -dDetectDuplicateImages \
+       -dCompressFonts=true -r150 -sOutputFile=output.pdf input.pdf
 
 
    use PDF::Reuse;
