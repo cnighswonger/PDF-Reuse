@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                PDF-Reuse
-version:             0.39
+version:             0.40
 abstract:            Reuse and mass produce PDF documents
 license:             perl
 author:
