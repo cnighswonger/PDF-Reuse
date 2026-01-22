@@ -15,7 +15,7 @@ use Compress::Zlib qw(compress inflateInit);
 use autouse 'Data::Dumper'   => qw(Dumper);
 use AutoLoader qw(AUTOLOAD);
 
-our $VERSION = '0.36';
+our $VERSION = '0.39';
 our @ISA     = qw(Exporter);
 our @EXPORT  = qw(prFile
                   prPage
@@ -297,6 +297,9 @@ sub prFile
    elsif (IS_MODPERL && $utfil eq '-')     # mod_perl 1
    { tie *UTFIL, 'Apache';
    }
+   elsif ($utfil_ref and $utfil_ref eq 'IO::String')
+   { tie *UTFIL, $utfil;
+   }
    else
    { open (UTFIL, ">$utfil") || errLog("Couldn't open file $utfil, $!");
    }
@@ -315,7 +318,7 @@ sub prFile
        else
        {  $runfil = $ldir . $filnamn  . '.dat';
        }
-       open (RUNFIL, ">>$runfil") || errLog("Couldn't open loggfile $runfil, $!");
+       open (RUNFIL, ">>$runfil") || errLog("Couldn't open logfile $runfil, $!");
        $log .= "Vers~$VERSION\n";
    }
 
@@ -741,7 +744,7 @@ sub prDefaultGrState
 # En font lokaliseras och fontobjektet skrivs ev. ut
 ######################################################
 
-sub findFont()
+sub findFont
 {  no warnings;
    my $Font = shift || '';
 
@@ -847,7 +850,7 @@ sub skrivSida
    if (scalar %sidFont)
    {  $resursDict .= '/Font << ';
       my $i = 0;
-      for (keys %sidFont)
+      for (sort keys %sidFont)
       {  $resursDict .= "/$_ $sidFont{$_} 0 R";
       }
 
@@ -855,35 +858,35 @@ sub skrivSida
    }
    if (scalar %sidXObject)
    {  $resursDict .= '/XObject<<';
-      for (keys %sidXObject)
+      for (sort keys %sidXObject)
       {  $resursDict .= "/$_ $sidXObject{$_} 0 R";
       }
       $resursDict .= ">>";
    }
    if (scalar %sidExtGState)
    {  $resursDict .= '/ExtGState<<';
-      for (keys %sidExtGState)
+      for (sort keys %sidExtGState)
       {  $resursDict .= "\/$_ $sidExtGState{$_} 0 R";
       }
       $resursDict .= ">>";
    }
    if (scalar %sidPattern)
    {  $resursDict .= '/Pattern<<';
-      for (keys %sidPattern)
+      for (sort keys %sidPattern)
       {  $resursDict .= "/$_ $sidPattern{$_} 0 R";
       }
       $resursDict .= ">>";
    }
    if (scalar %sidShading)
    {  $resursDict .= '/Shading<<';
-      for (keys %sidShading)
+      for (sort keys %sidShading)
       {  $resursDict .= "/$_ $sidShading{$_} 0 R";
       }
       $resursDict .= ">>";
    }
    if (scalar %sidColorSpace)
    {  $resursDict .= '/ColorSpace<<';
-      for (keys %sidColorSpace)
+      for (sort keys %sidColorSpace)
       {  $resursDict .= "/$_ $sidColorSpace{$_} 0 R";
       }
       $resursDict .= ">>";
@@ -946,7 +949,7 @@ sub skrivSida
         {  $objNr++;
            $objekt[$objNr] = $pos;
 
-           $stream = "\nq\n1 0 0 1 $devX $devY cm\n/Xwq Do\nq\n";
+           $stream = "\nq\n1 0 0 1 $devX $devY cm\n/Xwq Do\nQ\n";
            $langd = length($stream);
            $confuseObj = $objNr;
            $stream = "$objNr 0 obj<</Length $langd>>stream\n" . "$stream";
@@ -1260,8 +1263,14 @@ sub prStrWidth
    my $FontSize = shift || $fontSize;
    my $w = 0;
 
-   #FIXME: We need to have more robust error trapping and communication of that back to the caller
-   return unless $string; # there's no use continuing if no string is passed in
+   # there's no use continuing if no string is passed in
+   if (! defined($string))
+   {  errLog("undefined value passed to prStrWidth");
+   }
+
+   if (length($string) == 0)
+   {  return 0;
+   }
 
    if(my($width) = ttfStrWidth($string, $Font, $FontSize))
    {  return $width;
@@ -1514,6 +1523,17 @@ sub encode_text
 sub text_width
 {  my($self, $text, $size) = @_;
    return $self->{ttfont}->width($text) * $size;
+}
+
+sub DESTROY
+{  my $self = shift;
+   if(my $ttfont = $self->{ttfont})
+   {  if(my $font = delete $ttfont->{' font'})
+      { $font->release();
+      }
+      $ttfont->release();
+   }
+   %$self = ();
 }
 
 
@@ -2480,9 +2500,9 @@ internal tables, are initiated.
 
    prAltJpeg ( $imageData, $width, $height, $format, $altImageData, $altWidth, $altHeight, $altFormat )
 
-B<$imageFile> contains 1 single jpeg-image. B<$width> and B<$height>
+B<$imageData> contains 1 single jpeg-image. B<$width> and B<$height>
 also have to be specified. B<$format> indicates the format the image
-data takes: 0 for file, 1 for binary string. B<$altImageFile> etc.
+data takes: 0 for file, 1 for binary string. B<$altImageData> etc.
 follows the same foramt. Returns the B<$internalName>
 
    use PDF::Reuse;
@@ -2520,7 +2540,7 @@ follows the same foramt. Returns the B<$internalName>
 
    prJpeg ( $imageData, $width, $height, $format )
 
-B<$imageFile> contains 1 single jpeg-image. B<$width> and B<$height>
+B<$imageData> contains 1 single jpeg-image. B<$width> and B<$height>
 also have to be specified. B<$format> indicates the format the image
 data takes: 0 for file, 1 for binary string. Returns the B<$internalName>
 
@@ -3280,14 +3300,6 @@ sub descend
         }
      }
 
-     if (exists $entry{'act'})
-     {   my $code = $entry{'act'};
-         if ($code =~ m/^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*$/os)
-         {  # $code = "this.pageNum = $1; this.scroll($2, $3);";
-              $code = "this.pageNum = $1;".($3?" this.scroll($2, $3);":"");
-         }
-         $jsObj = skrivJS($code);
-     }
 
      $objekt[$me] = $pos;
      $rad = "$me 0 obj<<";
@@ -3297,6 +3309,14 @@ sub descend
      $rad .= "/Parent $parent 0 R";
      if (defined $jsObj)
      {  $rad .= "/A $jsObj 0 R";
+     }
+     if (exists $entry{'act'})
+     {   my $code = $entry{'act'};
+         if ($code =~ m/(\d+)/os)
+         {
+              $code = $1;
+         }
+         $rad .= "/Dest [$code /XYZ null null null] ";
      }
      if (exists $entry{'previous'})
      {  $rad .= "/Prev $entry{'previous'} 0 R";
@@ -3487,10 +3507,10 @@ sub prImage
 
 
 sub prMbox
-{  my $lx = shift || 0;
-   my $ly = shift || 0;
-   my $ux = shift || 595;
-   my $uy = shift || 842;
+{  my $lx = defined($_[0]) ? shift : 0;
+   my $ly = defined($_[0]) ? shift : 0;
+   my $ux = defined($_[0]) ? shift : 595;
+   my $uy = defined($_[0]) ? shift : 842;
 
    if ((defined $lx) && ($lx =~ m'^[\d\-\.]+$'o))
    { $genLowerX = $lx; }
@@ -4288,18 +4308,24 @@ sub xRefs
       }
       if ($buf =~ m'\bstartxref\s+(\d+)'o)
       {  $xref = $1;
-         while ($xref)
-         {  $res = sysseek INFIL, $xref, 0;
-            $res = sysread INFIL, $buf, 200;
-            if ($buf =~ m '^\d+\s\d+\sobj'os)
-            {  ($xref, $tempRoot, $nr) = crossrefObj($nr, $xref);
+         if ($xref <= $bytes)
+         {
+            while ($xref)
+            {  $res = sysseek INFIL, $xref, 0;
+               $res = sysread INFIL, $buf, 200;
+               if ($buf =~ m '^\d+\s\d+\sobj'os)
+               {  ($xref, $tempRoot, $nr) = crossrefObj($nr, $xref);
+               }
+               else
+               {  ($xref, $tempRoot, $nr) = xrefSection($nr, $xref, $infil);
+               }
+               if (($tempRoot) && (! $Root))
+               {  $Root = $tempRoot;
+               }
             }
-            else
-            {  ($xref, $tempRoot, $nr) = xrefSection($nr, $xref, $infil);
-            }
-            if (($tempRoot) && (! $Root))
-            {  $Root = $tempRoot;
-            }
+         }
+         else
+         {  errLog("Invalid XREF, aborting");
          }
       }
    }
@@ -4352,6 +4378,9 @@ sub crossrefObj
     {  if ($_ =~ m'^(\w+)(.*)'o)
        {  $param{$1} = $2 || ' ';
        }
+    }
+    if (!exists $param{'Index'})
+    {  $param{'Index'} = "[0 $param{'Size'}]";
     }
     if ((exists $param{'Root'}) && ($param{'Root'} =~ m'^\s*(\d+)'o))
     {  $tempRoot = $1;
@@ -4507,7 +4536,8 @@ sub xrefSection
     }
 
     while ($inrad)
-    {   if ($buf =~ m'Encrypt'o)
+    {   $buf .= $inrad;
+        if ($buf =~ m'Encrypt'o)
         {  errLog("The file $infil is encrypted, cannot be used, aborts");
         }
         if ((! $root) && ($buf =~ m'\/Root\s+(\d+)\s{1,2}\d+\s{1,2}R'so))
@@ -4526,7 +4556,6 @@ sub xrefSection
         {  last; }
 
         sysread INFIL, $inrad, 30;
-        $buf .= $inrad;
     }
     return ($xref, $root, $nr);
 }
@@ -6281,7 +6310,7 @@ sub sidAnalys
 
        if (scalar %sidFont)
        {  my $str = '';
-          for (keys %sidFont)
+          for (sort keys %sidFont)
           {  $str .= "/$_ $sidFont{$_} 0 R";
           }
           if ($resources !~ m'\/Font'os)
@@ -6294,7 +6323,7 @@ sub sidAnalys
 
        if (scalar %sidXObject)
        {  my $str = '';
-          for (keys %sidXObject)
+          for (sort keys %sidXObject)
           {  $str .= "/$_ $sidXObject{$_} 0 R";
           }
           if ($resources !~ m'\/XObject'os)
@@ -6307,7 +6336,7 @@ sub sidAnalys
 
        if (scalar %sidExtGState)
        {  my $str = '';
-          for (keys %sidExtGState)
+          for (sort keys %sidExtGState)
           {  $str .= "/$_ $sidExtGState{$_} 0 R";
           }
           if ($resources !~ m'\/ExtGState'os)
@@ -6320,7 +6349,7 @@ sub sidAnalys
 
        if (scalar %sidPattern)
        {  my $str = '';
-          for (keys %sidPattern)
+          for (sort keys %sidPattern)
           {  $str .= "/$_ $sidPattern{$_} 0 R";
           }
           if ($resources !~ m'\/Pattern'os)
@@ -6333,7 +6362,7 @@ sub sidAnalys
 
        if (scalar %sidShading)
        {  my $str = '';
-          for (keys %sidShading)
+          for (sort keys %sidShading)
           {  $str .= "/$_ $sidShading{$_} 0 R";
           }
           if ($resources !~ m'\/Shading'os)
@@ -6346,7 +6375,7 @@ sub sidAnalys
 
        if (scalar %sidColorSpace)
        {  my $str = '';
-          for (keys %sidColorSpace)
+          for (sort keys %sidColorSpace)
           {  $str .= "/$_ $sidColorSpace{$_} 0 R";
           }
           if ($resources !~ m'\/ColorSpace'os)
@@ -6894,7 +6923,7 @@ sub errLog
     my $lutfil = $utfil || 'undef';
 
     my $lrunfil = $runfil || 'undef';
-    open (ERRLOG, ">$errLog") || croak "$mess can't open an error logg, $!";
+    open (ERRLOG, ">$errLog") || croak "$mess can't open an error log, $!";
     print ERRLOG "\n$mess\n\n";
     print ERRLOG Carp::longmess("The error occurred when executing:\n");
     print ERRLOG "\nSituation when the error occurred\n\n";
