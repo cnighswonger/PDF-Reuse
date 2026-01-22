@@ -1,12 +1,21 @@
 Revision history for Perl extension PDF::Reuse
 
-0.40 Mon Jan 28 2019
-     120459     Uses deprecated defined %hash
-     120346	Parsing of refs is too strict
-     XXXXXX	This patch corrects a bug whereby the root object of a PDF cannot be found.
-     120401	Reads the entire contents when extracting a single page
+0.40 Thu Jan 22 2026
+     Bug fixes:
+     120459     Uses deprecated defined(%hash) - breaks Perl 5.24+
+     120346     Parsing of refs is too strict
+     120401     Reads the entire contents when extracting a single page
+     130152     sprintf with undefined objekt values should not warn
+     171691     IO::String untie - prFile() fails after IO::String write
+     83185      crossrefObj non-numeric argument warning from hex strings
+     168975     prForm() should accept IO::String objects as file input
+     131484     Document GhostScript usage for stream concatenation
+     GitHub#8   prDocForm crash on undefined links array reference
 
-     Updating copyright notices
+     Internal improvements:
+     - Root object finding patch (from ver_0.40 branch)
+     - strict compatibility fixes (variable declarations)
+     - Added regression test suite (t/regression.t)
 
      Thanks to all who contributed patches for these fixes!
 
