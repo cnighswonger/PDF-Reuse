@@ -1043,6 +1043,15 @@ sub prEnd
 
     if($docProxy)
     {  $docProxy->write_objects;
+       # Release Font::TTF data and TTFont0 objects now that they are written
+       for my $obj (values %{ $docProxy->{' objcache'} })
+       {  if ($obj->isa('Text::PDF::TTFont0'))
+          {  if (my $font = delete $obj->{' font'})
+             {  $font->release();
+             }
+             $obj->release();
+          }
+       }
        undef $docProxy;             # Break circular refs
     }
 
@@ -1549,12 +1558,10 @@ sub text_width
 
 sub DESTROY
 {  my $self = shift;
-   if(my $ttfont = $self->{ttfont})
-   {  if(my $font = delete $ttfont->{' font'})
-      { $font->release();
-      }
-      $ttfont->release();
-   }
+   # Do NOT release the ttfont (TTFont0) object here -- it is still
+   # owned by the DocProxy's objcache and will be cleaned up in prEnd().
+   # Releasing it here would wipe its ' uid' field causing write_objects
+   # to crash (GitHub issue #24).
    %$self = ();
 }
 
@@ -3392,6 +3399,18 @@ sub prInitVars
     $filnamn, $interAktivSida, $taInterAkt, $type, $runfil, $checkCs,
     $confuseObj, $compress,$pos, $fontNr, $objNr,
     $defGState, $gSNr, $pattern, $shading, $colorSpace) = '';
+
+    if ($docProxy)
+    {  for my $obj (values %{ $docProxy->{' objcache'} })
+       {  if ($obj->isa('Text::PDF::TTFont0'))
+          {  if (my $font = delete $obj->{' font'})
+             {  $font->release();
+             }
+             $obj->release();
+          }
+       }
+       undef $docProxy;
+    }
 
     (@kids, @counts, @formBox, @objekt, @parents, @aktuellFont, @skapa,
      @jsfiler, @inits, @bookmarks, @annots) = ();

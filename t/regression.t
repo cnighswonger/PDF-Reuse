@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 9;
+use Test::More tests => 12;
 use IO::String;
 use File::Temp qw(tempfile);
 
@@ -151,4 +151,62 @@ BEGIN {
     ok($ok, 'RT #168975: prForm() accepts IO::String input')
         or diag("Error: $err");
     ok(-s $tmpfile > 0, 'RT #168975: Output PDF has content');
+}
+
+# GitHub #24
+# prTTFont leaves orphaned $docProxy causing prEnd() crash.
+# The DESTROY method on the TTFont wrapper was calling release() on the
+# TTFont0 object (wiping its uid), while the DocProxy still held a reference.
+SKIP: {
+    eval { require Text::PDF::TTFont0; require Font::TTF::Font; };
+    skip 'Text::PDF::TTFont0 or Font::TTF not available', 3 if $@;
+
+    my @fonts = glob('/usr/share/fonts/truetype/*/*.ttf');
+    skip 'No TTF fonts found on system', 3 unless @fonts;
+    my $font = $fonts[0];
+
+    # Test 1: Normal prTTFont session works
+    my ($fh1, $file1) = tempfile(SUFFIX => '.pdf', UNLINK => 1);
+    close $fh1;
+    my $ok1 = eval {
+        prFile($file1);
+        prPage();
+        prTTFont($font);
+        prEnd();
+        1;
+    };
+    ok($ok1, 'GitHub #24: prTTFont in normal session does not crash')
+        or diag("Error: $@");
+
+    # Test 2: prInitVars clears docProxy
+    my ($fh2, $file2) = tempfile(SUFFIX => '.pdf', UNLINK => 1);
+    close $fh2;
+    prFile($file2);
+    prPage();
+    prTTFont($font);
+    prInitVars();
+    {
+        no strict 'refs';
+        is(${"PDF::Reuse::docProxy"}, undef,
+            'GitHub #24: prInitVars clears docProxy');
+    }
+
+    # Test 3: Multiple sessions with prTTFont do not crash
+    my ($fh3, $file3) = tempfile(SUFFIX => '.pdf', UNLINK => 1);
+    close $fh3;
+    my ($fh4, $file4) = tempfile(SUFFIX => '.pdf', UNLINK => 1);
+    close $fh4;
+    my $ok3 = eval {
+        prFile($file3);
+        prPage();
+        prTTFont($font);
+        prEnd();
+        prFile($file4);
+        prPage();
+        prTTFont($font);
+        prEnd();
+        1;
+    };
+    ok($ok3, 'GitHub #24: Multiple prTTFont sessions do not crash')
+        or diag("Error: $@");
 }
