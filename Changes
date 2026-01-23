@@ -1,5 +1,11 @@
 Revision history for Perl extension PDF::Reuse
 
+0.43 Thu Jan 23 2026
+     - Fix prTTFont/prEnd crash from orphaned docProxy (GitHub #24)
+       DESTROY was releasing TTFont0 objects still owned by DocProxy,
+       corrupting their uid and crashing write_objects().
+     - prInitVars now properly resets docProxy state
+
 0.42 Thu Jan 22 2026
      - Add provides and no_index to META for proper PAUSE indexing
      - Add LICENSE, SECURITY.md, CONTRIBUTING.md
