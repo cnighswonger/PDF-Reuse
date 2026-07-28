@@ -4361,12 +4361,12 @@ sub prep
 # filename. If the file behind that name is replaced within one session the
 # offsets no longer describe it, and analysera() dies "Didn't find pages".
 #
-# Files written by this module are invalidated exactly, in prEnd(). This is
-# the best-effort guard for files replaced by something else (PDF::API2,
-# another process). Same-second rewrites that preserve the byte count are not
-# detectable this way -- stat mtime is whole seconds -- so prInitVars()
-# remains the reliable reset when an external writer rewrites a source file
-# in place.
+# Files written by this module are invalidated exactly, in prFile(), at the
+# moment the output file is truncated. This is the best-effort guard for
+# files replaced by something else (PDF::API2, another process).
+# Same-second rewrites that preserve the byte count are not detectable this
+# way -- stat mtime is whole seconds -- so prInitVars() remains the reliable
+# reset when an external writer rewrites a source file in place.
 #
 sub dropChangedCache
 {  my $infil = shift;
