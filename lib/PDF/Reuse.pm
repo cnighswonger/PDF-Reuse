@@ -306,6 +306,15 @@ sub prFile
    else
    { open (UTFIL, ">$utfil") || errLog("Couldn't open file $utfil, $!");
    }
+
+   # Opening for write just discarded whatever this name held, so any cached
+   # parse of it now describes bytes that no longer exist. Drop it here, at
+   # the moment of truncation, rather than at prEnd() -- otherwise the stale
+   # entry stays live for the whole time the file is being rewritten.
+   if (!ref $utfil)
+   {  delete $processed{$utfil};
+      delete $behandlad{$utfil};
+   }
    binmode UTFIL;
    my $utrad = "\%PDF-1.4\n\%\â\ã\Ï\Ó\n";
 
@@ -1139,15 +1148,6 @@ sub prEnd
     $pos += syswrite UTFIL, "%%EOF\n";
     close UTFIL;
     { no warnings; untie *UTFIL; }
-
-    # This file now holds different bytes than any cached parse of it.
-    # Reusing a filename for fresh content is the documented temp-file
-    # idiom, so drop the stale entries rather than leave analysera()
-    # seeking to old offsets.
-    if (defined $utfil && !ref $utfil)
-    {  delete $processed{$utfil};
-       delete $behandlad{$utfil};
-    }
 
     if ($runfil)
     {   if ($log)
