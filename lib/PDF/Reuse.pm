@@ -1140,6 +1140,15 @@ sub prEnd
     close UTFIL;
     { no warnings; untie *UTFIL; }
 
+    # This file now holds different bytes than any cached parse of it.
+    # Reusing a filename for fresh content is the documented temp-file
+    # idiom, so drop the stale entries rather than leave analysera()
+    # seeking to old offsets.
+    if (defined $utfil && !ref $utfil)
+    {  delete $processed{$utfil};
+       delete $behandlad{$utfil};
+    }
+
     if ($runfil)
     {   if ($log)
         { print RUNFIL $log;
@@ -4347,6 +4356,34 @@ sub prep
 }
 
 
+#
+# %processed and %behandlad cache byte offsets into a source file, keyed by
+# filename. If the file behind that name is replaced within one session the
+# offsets no longer describe it, and analysera() dies "Didn't find pages".
+#
+# Files written by this module are invalidated exactly, in prEnd(). This is
+# the best-effort guard for files replaced by something else (PDF::API2,
+# another process). Same-second rewrites that preserve the byte count are not
+# detectable this way -- stat mtime is whole seconds -- so prInitVars()
+# remains the reliable reset when an external writer rewrites a source file
+# in place.
+#
+sub dropChangedCache
+{  my $infil = shift;
+   return if ref $infil;
+   my @stati = stat($infil);
+   return unless @stati;
+   my $stamp = "$stati[9]|$stati[7]";
+   my $known = $processed{$infil}->{fileStamp};
+   if (defined $known)
+   {  return if $known eq $stamp;
+      delete $processed{$infil};
+      delete $behandlad{$infil};
+   }
+   $processed{$infil}->{fileStamp} = $stamp;
+   return;
+}
+
 sub xRefs
 {  my ($bytes, $infil) = @_;
    my ($j, $nr, $xref, $i, $antal, $inrad, $Root, $tempRoot, $referens);
@@ -4798,6 +4835,7 @@ sub getPage
    }
    $form{$fSource}[fID] =  $checkId;
    $checkId = '';
+   dropChangedCache($infil);
    $behandlad{$infil}->{old} = {}
         unless (defined $behandlad{$infil}->{old});
    $processed{$infil}->{oldObject} = {}
@@ -5333,6 +5371,7 @@ sub byggForm
    my $fSource = $infil . '_' . $sidnr;
    my @stati = stat($infil);
 
+   dropChangedCache($infil);
    $behandlad{$infil}->{old} = {}
         unless (defined $behandlad{$infil}->{old});
    $processed{$infil}->{oldObject} = {}
@@ -5493,6 +5532,7 @@ sub getImage
    my $fSource = $infil . '_' . $sidnr;
    my $iSource = $fSource . '_' . $bildnr;
 
+   dropChangedCache($infil);
    $behandlad{$infil}->{old} = {}
         unless (defined $behandlad{$infil}->{old});
    $processed{$infil}->{oldObject} = {}
@@ -5578,6 +5618,7 @@ sub AcroFormsEtc
    my ($res, $corr, $nyDel1, @objData, $del1, $del2, $utrad);
    my $fSource = $infil . '_' . $sidnr;
 
+   dropChangedCache($infil);
    $behandlad{$infil}->{old} = {}
         unless (defined $behandlad{$infil}->{old});
    $processed{$infil}->{oldObject} = {}
@@ -5679,6 +5720,7 @@ sub extractName
    my $del2 = '';
    @skapa = ();
 
+   dropChangedCache($infil);
    $behandlad{$infil}->{old} = {}
         unless (defined $behandlad{$infil}->{old});
    $processed{$infil}->{oldObject} = {}
@@ -5876,6 +5918,7 @@ sub extractObject
    my $del2 = '';
    @skapa = ();
 
+   dropChangedCache($infil);
    $behandlad{$infil}->{old} = {}
         unless (defined $behandlad{$infil}->{old});
    $processed{$infil}->{oldObject} = {}
@@ -6040,6 +6083,7 @@ sub analysera
    my $sidAcc = 0;
    @skapa     = ();
 
+   dropChangedCache($infil);
    $behandlad{$infil}->{old} = {}
         unless (defined $behandlad{$infil}->{old});
    $processed{$infil}->{oldObject} = {}

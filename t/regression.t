@@ -3,9 +3,10 @@
 use strict;
 use warnings;
 
-use Test::More tests => 12;
+use Test::More tests => 15;
 use IO::String;
 use File::Temp qw(tempfile);
+use File::Spec;
 
 BEGIN {
     use_ok('PDF::Reuse') or BAIL_OUT "Can't load PDF::Reuse";
@@ -209,4 +210,59 @@ SKIP: {
     };
     ok($ok3, 'GitHub #24: Multiple prTTFont sessions do not crash')
         or diag("Error: $@");
+}
+
+# GitHub #21 / #22 (RT #103758, RT #103768)
+# %processed caches byte offsets keyed by filename. Reusing a filename for
+# fresh content within one session must not apply the old file's offsets to
+# the new bytes -- that failed with "Didn't find pages" on the second pass.
+{
+    my $dir = File::Temp->newdir();
+    my $tpl = File::Spec->catfile($dir, 'tpl.pdf');
+
+    my $build = sub {
+        my ($pages, $label) = @_;
+        prFile($tpl);
+        for my $p (1 .. $pages) {
+            prPage() if $p > 1;
+            prFontSize(24);
+            prText(72, 700, "$label page $p");
+        }
+        prEnd();
+    };
+
+    my $ok = eval {
+        for my $i (1 .. 3) {
+            $build->($i * 3, "ITER$i");
+            prFile(File::Spec->catfile($dir, "out_$i.pdf"));
+            prDoc($tpl);
+            prEnd();
+        }
+        1;
+    };
+    ok($ok, 'GitHub #21/#22: reusing a filename for new content does not die')
+        or diag("Error: $@");
+
+    # The cache must survive for a file that has NOT changed -- that is what it
+    # exists for, and clearing it wholesale would be a performance regression.
+    my $fixed = File::Spec->catfile($dir, 'fixed.pdf');
+    prFile($fixed);
+    prPage();
+    prText(72, 700, 'unchanged template');
+    prEnd();
+
+    prFile(File::Spec->catfile($dir, 'r1.pdf'));
+    prDoc($fixed);
+    prEnd();
+    my $first = do { no strict 'refs'; ${"PDF::Reuse::processed"}{$fixed}{root} };
+
+    prFile(File::Spec->catfile($dir, 'r2.pdf'));
+    prDoc($fixed);
+    prEnd();
+    my $second = do { no strict 'refs'; ${"PDF::Reuse::processed"}{$fixed}{root} };
+
+    ok(defined $first && defined $second,
+        'GitHub #21/#22: cache retained across reuse of an unchanged file');
+    is($second, $first,
+        'GitHub #21/#22: cached root is stable for an unchanged file');
 }
