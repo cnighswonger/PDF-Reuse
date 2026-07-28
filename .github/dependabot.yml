@@ -1,0 +1,10 @@
+version: 2
+updates:
+
+  # Upstream workflow refs are pinned to a SHA so CI cannot change without a
+  # commit here. Dependabot proposes the bumps, keeping the pins current
+  # without giving up reproducibility.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
