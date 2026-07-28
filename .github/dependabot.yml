@@ -1,9 +1,14 @@
 version: 2
 updates:
 
-  # Upstream workflow refs are pinned to a SHA so CI cannot change without a
-  # commit here. Dependabot proposes the bumps, keeping the pins current
-  # without giving up reproducibility.
+  # Covers actions/* and other tagged refs that appear in workflows here.
+  #
+  # It does NOT maintain the PerlToolsTeam/github_workflows SHA pins in
+  # ci.yml. Dependabot only advances a SHA-pinned ref when the upstream repo
+  # publishes tags (dependabot-core github_actions/update_checker.rb,
+  # latest_commit_sha returns early without a latest_version_tag), and that
+  # repo has none. Those pins must be reviewed by hand -- see
+  # docs/ci-pin-maintenance.md.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
