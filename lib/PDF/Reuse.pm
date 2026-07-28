@@ -1051,7 +1051,8 @@ sub prEnd
     skrivUtNoder();
 
     if($docProxy)
-    {  $docProxy->write_objects;
+    {  PDF::Reuse::TTFont::attach_tounicode($docProxy);
+       $docProxy->write_objects;
        # Release Font::TTF data and TTFont0 objects now that they are written
        for my $obj (values %{ $docProxy->{' objcache'} })
        {  if ($obj->isa('Text::PDF::TTFont0'))
@@ -1519,6 +1520,7 @@ sub new
 {  my $class = shift;
 
    require Text::PDF::TTFont0;
+   require Text::PDF::Utils;
 
    my $self = bless { 'subset'   => 1, @_, }, $class;
 
@@ -1535,6 +1537,79 @@ sub new
    $self->{fontname} ||= $self->find_name();
 
    return $self;
+}
+
+# Build a /ToUnicode CMap for every embedded TrueType font and attach it to
+# the font dictionary, so text in the output is searchable and copyable.
+# RT #123564 / GitHub #15.
+#
+# Text::PDF::TTFont0 has its own ToUnicode option, but its CMap generation is
+# broken (RT #123562, unfixed upstream since 2017) and would emit malformed
+# data. The mapping is built here instead: Text::PDF::Dict::outobjdeep
+# serialises dictionary keys generically, and DocProxy owns object
+# registration, so nothing in Text::PDF needs to change.
+#
+# Called from prEnd() before write_objects, which is the first moment the
+# subset vector is complete -- so only glyphs actually used are mapped.
+sub attach_tounicode
+{  my $proxy = shift;
+
+   for my $ttfont (values %{ $proxy->{' objcache'} })
+   {  next unless eval { $ttfont->isa('Text::PDF::TTFont0') };
+      next if $ttfont->{'ToUnicode'};
+      my $font = $ttfont->{' font'}    or next;
+      my $cmap = $font->{'cmap'}       or next;
+      my @rev  = eval { $cmap->read->reverse } or next;
+
+      my @pairs;
+      for my $gid (0 .. $#rev)
+      {  my $uni = $rev[$gid];
+         next unless defined $uni;
+         next if $ttfont->{' subset'} && ! vec($ttfont->{' subvec'}, $gid, 1);
+         push @pairs, [ $gid, $uni ];
+      }
+      next unless @pairs;
+
+      my $stream = tounicode_cmap(\@pairs);
+      my $dict   = Text::PDF::Utils::PDFDict();
+      $proxy->new_obj($dict);
+      $dict->{' stream'} = $stream;
+      $ttfont->{'ToUnicode'} = $dict;
+   }
+   return;
+}
+
+sub tounicode_cmap
+{  my $pairs = shift;
+
+   my $str = "/CIDInit /ProcSet findresource begin 12 dict begin begincmap\n"
+           . "/CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def\n"
+           . "/CMapName /Adobe-Identity-UCS def\n"
+           . "/CMapType 2 def\n"
+           . "1 begincodespacerange <0000> <FFFF> endcodespacerange\n";
+
+   # Adobe caps a bfchar section at 100 entries.
+   my $total = scalar @$pairs;
+   for (my $i = 0; $i < $total; $i += 100)
+   {  my $end = $i + 100 > $total ? $total : $i + 100;
+      $str .= ($end - $i) . " beginbfchar\n";
+      for my $p (@{$pairs}[$i .. $end - 1])
+      {  $str .= sprintf("<%04X> <%s>\n", $p->[0], utf16be_hex($p->[1]));
+      }
+      $str .= "endbfchar\n";
+   }
+
+   $str .= "endcmap CMapName currentdict /CMap defineresource pop end end\n";
+   return $str;
+}
+
+# ToUnicode destinations are UTF-16BE, so anything outside the BMP needs a
+# surrogate pair rather than a bare value.
+sub utf16be_hex
+{  my $uni = shift;
+   return sprintf("%04X", $uni) if $uni <= 0xFFFF;
+   my $v = $uni - 0x10000;
+   return sprintf("%04X%04X", 0xD800 + ($v >> 10), 0xDC00 + ($v & 0x3FF));
 }
 
 sub filename  { return $_[0]->{filename};     }
@@ -2911,6 +2986,17 @@ context only C<$internalName> is returned.
 
 Note: To use this function, you must have the L<Font::TTF> and L<Text::PDF>
 modules installed.
+
+Text set in an embedded TrueType font is searchable and copyable: a
+/ToUnicode CMap mapping the embedded glyphs back to Unicode is generated
+automatically and written with the font. Only the glyphs actually used are
+mapped, so the mapping costs nothing for characters the document does not
+contain. Code points outside the Basic Multilingual Plane are encoded as
+UTF-16BE surrogate pairs, as the PDF specification requires.
+
+No option is provided to suppress the CMap. It is small, it is what makes
+the text usable, and a PDF whose text cannot be extracted is rarely what
+anyone wants.
 
 
 =head1 INTERNAL OR DEPRECATED FUNCTIONS
