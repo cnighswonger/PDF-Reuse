@@ -272,12 +272,22 @@ SKIP: {
 # Text::PDF::TTFont0's own ToUnicode support emits a malformed CMap (RT #123562,
 # unfixed upstream), so PDF::Reuse builds the mapping itself.
 SKIP: {
-    my ($ttf) = grep { -r $_ } qw(
-        /usr/share/fonts/truetype/andika/Andika-Bold.ttf
-        /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
-        /usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf
+    # Runners differ: Linux images carry DejaVu/Liberation, macOS keeps fonts
+    # under /System or /Library, Windows under the system root. Glob rather
+    # than list, so this exercises the CMap on every platform that has any
+    # TrueType font rather than silently skipping.
+    my @globs = (
+        '/usr/share/fonts/truetype/*/*.ttf',
+        '/usr/share/fonts/*/*.ttf',
+        '/Library/Fonts/*.ttf',
+        '/System/Library/Fonts/*.ttf',
+        '/System/Library/Fonts/Supplemental/*.ttf',
+        ($ENV{SystemRoot} ? "$ENV{SystemRoot}\\Fonts\\*.ttf" : ()),
+        'C:/Windows/Fonts/*.ttf',
     );
-    skip 'no TrueType font available', 4 unless $ttf;
+    my ($ttf) = grep { -r $_ } map { glob $_ } @globs;
+    skip 'no TrueType font available on this platform', 4 unless $ttf;
+    diag("using font: $ttf");
 
     my $dir = File::Temp->newdir();
     my $out = File::Spec->catfile($dir, 'tt.pdf');
