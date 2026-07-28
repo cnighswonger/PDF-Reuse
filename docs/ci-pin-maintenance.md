@@ -30,9 +30,11 @@ action and the reusable workflows).
 
 Not frozen:
 
-- Actions invoked *inside* the pinned upstream files, which use tag refs
-  (`actions/checkout@v5`, `shogo82148/actions-setup-perl@v1`,
-  `ilammy/msvc-dev-cmd@v1`, `actions/upload-artifact@v5`). Tags can move.
+- Actions invoked *inside* the pinned upstream files, which use tag refs.
+  In the composite action: `actions/checkout@v5`,
+  `shogo82148/actions-setup-perl@v1`, `ilammy/msvc-dev-cmd@v1`,
+  `actions/upload-artifact@v5`. In the coverage and perlcritic reusable
+  workflows: `actions/checkout@v7`. Tags can move.
 - Container images in the coverage and perlcritic workflows
   (`davorg/perl-coveralls:latest`, `davorg/perl-perlcritic`), which float.
 
