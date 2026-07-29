@@ -4490,10 +4490,10 @@ sub dropSourceCaches
    for my $key (keys %image)
    {  delete $image{$key} if $key =~ $owned;
    }
+   my $owned_image = qr/\AIg:\Q$fil\E_\d+(?:_|\z)/;
    for my $key (keys %knownToFile)
-   {  my $bare = $key;
-      $bare =~ s/\AIg://;
-      delete $knownToFile{$key} if $bare =~ $owned;
+   {  delete $knownToFile{$key}
+          if $key =~ $owned || $key =~ $owned_image;
    }
    for my $font (keys %fontSource)
    {  my $source = $fontSource{$font}[foSOURCE];
