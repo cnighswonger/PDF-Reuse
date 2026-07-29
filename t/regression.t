@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 23;
+use Test::More tests => 26;
 use IO::String;
 use File::Temp qw(tempfile);
 use File::Spec;
@@ -390,4 +390,54 @@ SKIP: {
     };
     ok($kept >= 1,
         'GitHub #28: cache retained for a template that has not changed');
+}
+
+# Codex review of #32: the sweep originally tested the filename as a bare
+# prefix, so rewriting "t.pdf" also matched cache entries for "t.pdf_backup".
+# For %form that costs a re-parse; for %fontSource it loses an embedded font,
+# because prFile() has already cleared %font and findFont() can no longer
+# re-extract it. The match is anchored on the page number instead.
+{
+    my $dir  = File::Temp->newdir();
+    my $tpl  = File::Spec->catfile($dir, 't.pdf');
+    my $sib  = File::Spec->catfile($dir, 't.pdf_backup');
+
+    for my $f ($tpl, $sib) {
+        prFile($f);
+        prFontSize(24);
+        prText(72, 700, 'x');
+        prEnd();
+    }
+
+    # Seed both names into the caches by using each as a source.
+    for my $src ($tpl, $sib) {
+        prFile(File::Spec->catfile($dir, 'seed.pdf'));
+        prForm($src);
+        prEnd();
+    }
+
+    my $sib_before = do {
+        no strict 'refs';
+        scalar grep { index($_, $sib . '_') == 0 } keys %{"PDF::Reuse::form"};
+    };
+    ok($sib_before >= 1, 'GitHub #32: sibling filename is cached before the sweep')
+        or diag("sibling entries: $sib_before");
+
+    # Rewriting the shorter name must not disturb the longer one.
+    prFile($tpl);
+    prFontSize(24);
+    prText(72, 700, 'y');
+    prEnd();
+
+    my ($tpl_after, $sib_after) = do {
+        no strict 'refs';
+        my @k = keys %{"PDF::Reuse::form"};
+        ( scalar(grep { /\A\Q$tpl\E_\d+(?:_|\z)/ } @k),
+          scalar(grep { index($_, $sib . '_') == 0 } @k) );
+    };
+
+    is($tpl_after, 0,
+        'GitHub #32: the rewritten file\'s own entries are swept');
+    is($sib_after, $sib_before,
+        'GitHub #32: a sibling sharing the filename prefix is not swept');
 }

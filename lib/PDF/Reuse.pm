@@ -4465,6 +4465,14 @@ sub prep
 # Called from prFile() at the moment the output file is truncated, which is a
 # document boundary: nothing is mid-emission, so entries that are consumed
 # while a document is being written cannot be pulled out from under it.
+#
+# The match is anchored on the page number rather than testing the filename as
+# a bare prefix, so rewriting "t.pdf" does not sweep entries belonging to
+# "t.pdf_backup". For %form and friends that would only cost a re-parse, but
+# dropping a %fontSource entry loses an embedded font: prFile() has already
+# cleared %font, so findFont() can no longer re-extract it and falls through
+# to a default face. \Q keeps filenames containing regex metacharacters
+# literal.
 sub dropSourceCaches
 {  my $fil = shift;
    return if ref $fil;
@@ -4472,24 +4480,25 @@ sub dropSourceCaches
    delete $processed{$fil};
    delete $behandlad{$fil};
 
-   my $prefix = $fil . '_';
+   my $owned = qr/\A\Q$fil\E_\d+(?:_|\z)/;
    for my $key (keys %form)
-   {  delete $form{$key} if index($key, $prefix) == 0;
+   {  delete $form{$key} if $key =~ $owned;
    }
    for my $key (keys %intAct)
-   {  delete $intAct{$key} if index($key, $prefix) == 0;
+   {  delete $intAct{$key} if $key =~ $owned;
    }
    for my $key (keys %image)
-   {  delete $image{$key} if index($key, $prefix) == 0;
+   {  delete $image{$key} if $key =~ $owned;
    }
    for my $key (keys %knownToFile)
-   {  delete $knownToFile{$key}
-          if index($key, $prefix) == 0 || index($key, 'Ig:' . $prefix) == 0;
+   {  my $bare = $key;
+      $bare =~ s/\AIg://;
+      delete $knownToFile{$key} if $bare =~ $owned;
    }
    for my $font (keys %fontSource)
    {  my $source = $fontSource{$font}[foSOURCE];
       next unless defined $source;
-      delete $fontSource{$font} if index($source, $prefix) == 0;
+      delete $fontSource{$font} if $source =~ $owned;
    }
    return;
 }
