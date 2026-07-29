@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 15;
+use Test::More tests => 19;
 use IO::String;
 use File::Temp qw(tempfile);
 use File::Spec;
@@ -265,4 +265,59 @@ SKIP: {
         'GitHub #21/#22: cache retained across reuse of an unchanged file');
     is($second, $first,
         'GitHub #21/#22: cached root is stable for an unchanged file');
+}
+
+# RT #123564 / GitHub #15
+# Embedded TrueType text must be extractable, which requires a /ToUnicode CMap.
+# Text::PDF::TTFont0's own ToUnicode support emits a malformed CMap (RT #123562,
+# unfixed upstream), so PDF::Reuse builds the mapping itself.
+SKIP: {
+    # Runners differ: Linux images carry DejaVu/Liberation, macOS keeps fonts
+    # under /System or /Library, Windows under the system root. Glob rather
+    # than list, so this exercises the CMap on every platform that has any
+    # TrueType font rather than silently skipping.
+    my @globs = (
+        '/usr/share/fonts/truetype/*/*.ttf',
+        '/usr/share/fonts/*/*.ttf',
+        '/Library/Fonts/*.ttf',
+        '/System/Library/Fonts/*.ttf',
+        '/System/Library/Fonts/Supplemental/*.ttf',
+        ($ENV{SystemRoot} ? "$ENV{SystemRoot}\\Fonts\\*.ttf" : ()),
+        'C:/Windows/Fonts/*.ttf',
+    );
+    my ($ttf) = grep { -r $_ } map { glob $_ } @globs;
+    skip 'no TrueType font available on this platform', 4 unless $ttf;
+    diag("using font: $ttf");
+
+    my $dir = File::Temp->newdir();
+    my $out = File::Spec->catfile($dir, 'tt.pdf');
+
+    prInitVars();
+    prFile($out);
+    prTTFont($ttf);
+    prFontSize(14);
+    prText(60, 700, 'Hello ToUnicode');
+    prEnd();
+
+    open my $fh, '<', $out or BAIL_OUT "can't read $out: $!";
+    binmode $fh;
+    my $pdf = do { local $/; <$fh> };
+    close $fh;
+
+    like($pdf, qr{/ToUnicode}, 'GitHub #15: /ToUnicode key present for TrueType font');
+    like($pdf, qr{beginbfchar}, 'GitHub #15: CMap uses bfchar mappings');
+    like($pdf, qr{currentdict}, 'GitHub #15: CMap trailer is well formed');
+
+    # Every section must declare exactly as many entries as it contains --
+    # a miscount produces a CMap some readers silently reject.
+    my @declared = $pdf =~ /(\d+) beginbfchar/g;
+    my @bodies   = $pdf =~ /beginbfchar\n(.*?)endbfchar/gs;
+    my $consistent = scalar(@declared) == scalar(@bodies);
+    if ($consistent) {
+        for my $i (0 .. $#declared) {
+            my $actual = grep { /\S/ } split /\n/, $bodies[$i];
+            $consistent = 0 if $actual != $declared[$i];
+        }
+    }
+    ok($consistent, 'GitHub #15: each bfchar section declares its true entry count');
 }
