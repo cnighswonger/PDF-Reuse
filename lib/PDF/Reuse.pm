@@ -312,8 +312,7 @@ sub prFile
    # the moment of truncation, rather than at prEnd() -- otherwise the stale
    # entry stays live for the whole time the file is being rewritten.
    if (!ref $utfil)
-   {  delete $processed{$utfil};
-      delete $behandlad{$utfil};
+   {  dropSourceCaches($utfil);
    }
    binmode UTFIL;
    my $utrad = "\%PDF-1.4\n\%\â\ã\Ï\Ó\n";
@@ -4454,6 +4453,47 @@ sub prep
 # way -- stat mtime is whole seconds -- so prInitVars() remains the reliable
 # reset when an external writer rewrites a source file in place.
 #
+# Everything cached about one source file, dropped together.
+#
+# %processed and %behandlad are keyed by the filename itself. %form, %intAct
+# and %image are keyed by a filename-derived prefix -- "$file_$page" and
+# "$file_$page_$image" -- so they need a scan rather than a lookup. %fontSource
+# is keyed by font name, but its foSOURCE value carries one of those prefixes
+# and is used to re-extract from the named file, so a stale entry there points
+# at bytes that no longer exist too.
+#
+# Called from prFile() at the moment the output file is truncated, which is a
+# document boundary: nothing is mid-emission, so entries that are consumed
+# while a document is being written cannot be pulled out from under it.
+sub dropSourceCaches
+{  my $fil = shift;
+   return if ref $fil;
+
+   delete $processed{$fil};
+   delete $behandlad{$fil};
+
+   my $prefix = $fil . '_';
+   for my $key (keys %form)
+   {  delete $form{$key} if index($key, $prefix) == 0;
+   }
+   for my $key (keys %intAct)
+   {  delete $intAct{$key} if index($key, $prefix) == 0;
+   }
+   for my $key (keys %image)
+   {  delete $image{$key} if index($key, $prefix) == 0;
+   }
+   for my $key (keys %knownToFile)
+   {  delete $knownToFile{$key}
+          if index($key, $prefix) == 0 || index($key, 'Ig:' . $prefix) == 0;
+   }
+   for my $font (keys %fontSource)
+   {  my $source = $fontSource{$font}[foSOURCE];
+      next unless defined $source;
+      delete $fontSource{$font} if index($source, $prefix) == 0;
+   }
+   return;
+}
+
 sub dropChangedCache
 {  my $infil = shift;
    return if ref $infil;

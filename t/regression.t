@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 19;
+use Test::More tests => 23;
 use IO::String;
 use File::Temp qw(tempfile);
 use File::Spec;
@@ -320,4 +320,74 @@ SKIP: {
         }
     }
     ok($consistent, 'GitHub #15: each bfchar section declares its true entry count');
+}
+
+# GitHub #28
+# %form, %intAct and %image are keyed by a filename-derived prefix and were not
+# cleared when the file behind that name was rewritten. That produced a
+# spurious mtime abort in byggForm(), and -- worse -- a stale cached BBox, so a
+# rewritten template silently kept its old page geometry.
+{
+    my $dir = File::Temp->newdir();
+    my $tpl = File::Spec->catfile($dir, 'tpl.pdf');
+
+    my $build = sub {
+        my ($label, $w, $h) = @_;
+        prFile($tpl);
+        prMbox(0, 0, $w, $h);
+        prFontSize(24);
+        prText(72, 100, $label);
+        prEnd();
+    };
+
+    my $consume = sub {
+        my ($out) = @_;
+        prFile(File::Spec->catfile($dir, $out));
+        prForm($tpl);
+        prEnd();
+        open my $fh, '<', File::Spec->catfile($dir, $out) or return '';
+        binmode $fh;
+        my $pdf = do { local $/; <$fh> };
+        close $fh;
+        return $pdf;
+    };
+
+    $build->('ALPHA', 595, 842);
+    $consume->('o1.pdf');
+
+    # Same filename, different page size.
+    $build->('BRAVO', 300, 300);
+    my $second = eval { $consume->('o2.pdf') };
+    ok(defined $second, 'GitHub #28: reusing a template filename does not abort')
+        or diag("Error: $@");
+
+    my ($bbox) = ($second // '') =~ m{/BBox\s*\[\s*([^\]]*?)\s*\]};
+    like($bbox // '', qr{\b300\s+300\b},
+        'GitHub #28: the rewritten page geometry is used, not the cached one')
+        or diag("BBox was: " . ($bbox // 'not found'));
+
+    unlike($bbox // '', qr{\b842\b},
+        'GitHub #28: the stale BBox is gone');
+
+    # The caches exist to make an unchanged template cheap to reuse; only the
+    # rewritten name may be swept.
+    my $fixed = File::Spec->catfile($dir, 'fixed.pdf');
+    prFile($fixed);
+    prFontSize(24);
+    prText(72, 700, 'unchanged');
+    prEnd();
+
+    prFile(File::Spec->catfile($dir, 'r1.pdf'));
+    prForm($fixed);
+    prEnd();
+    prFile(File::Spec->catfile($dir, 'r2.pdf'));
+    prForm($fixed);
+    prEnd();
+
+    my $kept = do {
+        no strict 'refs';
+        scalar grep { index($_, $fixed . '_') == 0 } keys %{"PDF::Reuse::form"};
+    };
+    ok($kept >= 1,
+        'GitHub #28: cache retained for a template that has not changed');
 }
