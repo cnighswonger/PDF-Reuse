@@ -75,7 +75,7 @@ our $ddir    = '';
 our $log     = '';
 
 #########################
-# Konstanter för objekt
+# Constants for objects
 #########################
 
 use constant   oNR        => 0;
@@ -90,7 +90,7 @@ use constant   oTYPE      => 8;
 use constant   oNAME      => 9;
 
 ###################################
-# Konstanter för formulär
+# Constants for forms
 ###################################
 
 use constant   fOBJ       => 0;
@@ -104,7 +104,7 @@ use constant   fID        => 7;
 use constant   fVALID     => 8;
 
 ####################################
-# Konstanter för images
+# Constants for images
 ####################################
 
 use constant   imWIDTH     => 0;
@@ -116,7 +116,7 @@ use constant   imYSCALE    => 5;
 use constant   imIMAGENO   => 6;
 
 #####################################
-# Konstanter för interaktiva objekt
+# Constants for interactive objects
 #####################################
 
 use constant   iNAMES     => 1;
@@ -127,7 +127,7 @@ use constant   iSTARTSIDA => 5;
 use constant   iAAPAGE    => 6;
 
 #####################################
-# Konstanter för fonter
+# Constants for fonts
 #####################################
 
 use constant   foREFOBJ     => 0;
@@ -139,7 +139,7 @@ use constant   foTYP        => 5;
 use constant   foFONTOBJ    => 6;
 
 ##########
-# Övrigt
+# Miscellaneous
 ##########
 
 use constant IS_MODPERL => $ENV{MOD_PERL}; # For mod_perl 1.
@@ -338,7 +338,7 @@ sub prFile
    @kids        = ();
    @counts      = ();
    @objekt      = ();
-   $objNr       = 2; # Reserverat objekt 1 för root och 2 för initial sidnod
+   $objNr       = 2; # Object 1 reserved for root and 2 for the initial page node
    $parents[0]  = 2;
    $page        = 0;
    $formNr      = 0;
@@ -402,7 +402,7 @@ sub prPage
    $sidObjNr = $objNr;
 
    #
-   # Resurserna nollställs
+   # Reset the resources
    #
 
    %sidXObject    = ();
@@ -461,7 +461,7 @@ sub prText
   if (! $aktuellFont[foINTNAMN])
   {  findFont();
   }
-  my $Font        = $aktuellFont[foINTNAMN];        # Namn i strömmen
+  my $Font        = $aktuellFont[foINTNAMN];        # Name in the stream
   $sidFont{$Font} = $aktuellFont[foREFOBJ];
   my $fontname    = $aktuellFont[foEXTNAMN];
   my $ttfont      = $font{$fontname} ? $font{$fontname}[foFONTOBJ] : undef;
@@ -576,7 +576,7 @@ sub prAdd
 }
 
 ##########################
-# Ett grafiskt "formulär"
+# A graphical "form"
 ##########################
 
 sub prForm
@@ -649,11 +649,11 @@ sub prForm
      }
      else
      {  if ($tolerant)
-        {  if ((defined $refNr) && ($refNr eq '0'))   # Sidnumret existerar inte, men ok
+        {  if ((defined $refNr) && ($refNr eq '0'))   # The page number does not exist, but that is ok
            {   $namn = '0';
            }
            else
-           {   undef $namn;   # Sidan kan inte användas som form
+           {   undef $namn;   # The page cannot be used as a form
            }
         }
         elsif (! defined $refNr)
@@ -770,18 +770,18 @@ sub prDefaultGrState
 }
 
 ######################################################
-# En font lokaliseras och fontobjektet skrivs ev. ut
+# Locate a font and write out the font object if needed
 ######################################################
 
 sub findFont
 {  no warnings;
    my $Font = shift || '';
 
-   if (! (exists $fontSource{$Font}))        #  Fonten måste skapas
+   if (! (exists $fontSource{$Font}))        #  The font must be created
    {  if (exists $stdFont{$Font})
       {  $Font = $stdFont{$Font};}
       else
-      {  $Font = $genFont; }                 # Helvetica sätts om inget annat finns
+      {  $Font = $genFont; }                 # Helvetica is used if nothing else is available
       if (! (exists $font{$Font}))
       {  $objNr++;
          $fontNr++;
@@ -797,7 +797,7 @@ sub findFont
       }
    }
    else
-   {  if (defined $font{$Font}[foREFOBJ])       # Finns redan i filen
+   {  if (defined $font{$Font}[foREFOBJ])       # Already present in the file
       {  ; }
       else
       {  if ($fontSource{$Font}[foSOURCE] eq 'Standard')
@@ -863,7 +863,7 @@ sub skrivSida
    my $parent = $parents[0];
 
    ##########################################
-   #  Interaktiva funktioner läggs ev. till
+   #  Interactive functions are added if needed
    ##########################################
 
    if ($interAktivSida)
@@ -925,12 +925,12 @@ sub skrivSida
    my $resursObjekt;
 
    if (exists $resurser{$resursDict})
-   {  $resursObjekt = $resurser{$resursDict};  # Fanns ett identiskt,
-   }                                           # använd det
+   {  $resursObjekt = $resurser{$resursDict};  # An identical one existed,
+   }                                           # use that one
    else
    {   $objNr++;
        if ( keys(%resurser) < 10)
-       {  $resurser{$resursDict} = $objNr;  # Spara 10 första resursobjekten
+       {  $resurser{$resursDict} = $objNr;  # Save the first 10 resource objects
        }
        $resursObjekt   = $objNr;
        $objekt[$objNr] = $pos;
@@ -941,7 +941,7 @@ sub skrivSida
 
     if (! $touchUp)
     {   #
-        # Contents objektet skapas
+        # Create the Contents object
         #
 
         my $devX = "900";
@@ -1010,7 +1010,7 @@ sub skrivSida
         $pos += syswrite UTFIL, $streamObjekt;
         $streamObjekt = $objNr;
         ##################################
-        # Så skapas och skrivs sidobjektet
+        # Then create and write the page object
         ##################################
 
         $sidObjekt = "$sidObjNr 0 obj<</Type/Page/Parent $parent 0 R/Contents $streamObjekt 0 R"
@@ -1065,11 +1065,11 @@ sub prEnd
     }
 
     ###################
-    # Skriv root
+    # Write root
     ###################
 
     if (! defined $objekt[$objNr])
-    {  $objNr--;                   # reserverat sidobjektnr utnyttjades aldrig
+    {  $objNr--;                   # the reserved page object number was never used
     }
 
     my $utrad = "1 0 obj<</Type/Catalog/Pages $slutNod 0 R";
@@ -1169,8 +1169,8 @@ sub ordnaNoder
 
    while  ($antBarn < $#{$kids[$i]})
    {  #
-      # Skriv ut aktuell förälder
-      # flytta till nästa nivå
+      # Write out the current parent
+      # move to the next level
       #
       $vektor = '[';
 
@@ -1203,7 +1203,7 @@ sub skrivUtNoder
    my ($i, $j, $vektor, $nodObjekt);
    my $si = -1;
    #
-   # Hitta slutnoden
+   # Find the end node
    #
    for (@parents)
    { $slutNod = $_;
@@ -1211,13 +1211,13 @@ sub skrivUtNoder
    }
 
    for ($i = 0; $parents[$i] ne $slutNod; $i++)
-   {  if (defined $parents[$i])  # Bara definierat om det finns kids
+   {  if (defined $parents[$i])  # Only defined if there are kids
       {  $vektor = '[';
          for (@{$kids[$i]})
          {  $vektor .= "$_ 0 R "; }
          $vektor .= ']';
          ########################################
-         # Hitta förälder till aktuell förälder
+         # Find the parent of the current parent
          ########################################
          my $nod;
          for ($j = $i + 1; (! $nod); $j++)
@@ -1235,7 +1235,7 @@ sub skrivUtNoder
       }
    }
    #####################################
-   #  Så ordnas och skrivs slutnoden ut
+   #  Then arrange and write out the end node
    #####################################
    $vektor = '[';
    for (@{$kids[$si]})
@@ -3529,7 +3529,7 @@ sub prInitVars
 }
 
 ####################
-# Behandla en bild
+# Process an image
 ####################
 
 sub prImage
@@ -3711,7 +3711,7 @@ sub prBar
 
   findBarFont();
 
-  my $Font = $aktuellFont[foINTNAMN];                # Namn i strömmen
+  my $Font = $aktuellFont[foINTNAMN];                # Name in the stream
 
   if (($xPos) && ($yPos))
   {  $stream .= "\nBT /$Font $fontSize Tf ";
@@ -3760,7 +3760,7 @@ sub prExtract
 }
 
 
-########## Extrahera ett dokument ####################
+########## Extract a document ########################
 sub prDoc
 { my ($infil, $first, $last);
   my $param = shift;
@@ -3793,7 +3793,7 @@ sub prDoc
   return $sidor;
 }
 
-############# Ett interaktivt + grafiskt "formulär" ##########
+############# An interactive + graphical "form" #############
 
 sub prDocForm
 {my ($sidnr, $adjust, $effect, $tolerant, $infil, $x, $y, $size, $xsize,
@@ -3846,11 +3846,11 @@ sub prDocForm
      }
      else
      {  if ($tolerant)
-        {  if ((defined $refNr) && ($refNr eq '0'))   # Sidnumret existerar inte, men ok
+        {  if ((defined $refNr) && ($refNr eq '0'))   # The page number does not exist, but that is ok
            {   $namn = '0';
            }
            else
-           {   undef $namn;   # Sidan kan inte användas som form
+           {   undef $namn;   # The page cannot be used as a form
            }
         }
         elsif (! defined $refNr)
@@ -4162,13 +4162,13 @@ sub prGraphState
 }
 
 ##############################################################
-# Streckkods fonten lokaliseras och objekten skrivs ev. ut
+# Locate the barcode font and write out the objects if needed
 ##############################################################
 
 sub findBarFont()
 {  my $Font = 'Bar';
 
-   if (exists $font{$Font})              #  Objekt är redan definierat
+   if (exists $font{$Font})              #  Object is already defined
    {  $aktuellFont[foEXTNAMN]   = $Font;
       $aktuellFont[foREFOBJ]    = $font{$Font}[foREFOBJ];
       $aktuellFont[foINTNAMN]   = $font{$Font}[foINTNAMN];
@@ -4212,7 +4212,7 @@ sub findBarFont()
 
 sub createCharProcs()
 {   #################################
-    # Fonten (objektet) för 0 skapas
+    # Create the font (object) for 0
     #################################
 
     $objNr++;
@@ -4225,7 +4225,7 @@ sub createCharProcs()
     $pos += syswrite UTFIL, $obj;
 
     #################################
-    # Fonten (objektet) för 1 skapas
+    # Create the font (object) for 1
     #################################
 
     $objNr++;
@@ -4238,7 +4238,7 @@ sub createCharProcs()
     $pos += syswrite UTFIL, $obj;
 
     ###################################################
-    # Fonten (objektet) för 2, ett långt streck skapas
+    # Create the font (object) for 2, a long bar
     ###################################################
 
     $objNr++;
@@ -4251,7 +4251,7 @@ sub createCharProcs()
     $pos += syswrite UTFIL, $obj;
 
     #####################################################
-    # Objektet för "CharProcs" skapas
+    # Create the object for "CharProcs"
     #####################################################
 
     $objNr++;
@@ -4351,7 +4351,7 @@ sub prInit
 sub prVers
 {   my $vers = shift;
     ############################################################
-    # Om programmet körs om så kontrolleras VERSION
+    # If the program is re-run, VERSION is checked
     ############################################################
     if ($vers ne $VERSION)
     {  warn  "$vers \<\> $VERSION might give different results, if comparing two runs \n";
@@ -4558,7 +4558,7 @@ sub xRefs
    ($Root) || errLog("The Root object in $infil couldn't be found, aborting");
 
    ##############################################################
-   # Objekten sorteras i fallande ordning (efter offset i filen)
+   # Sort the objects in descending order (by offset in the file)
    ##############################################################
 
    my @offset = sort { $oldObject{$b} <=> $oldObject{$a} } keys %oldObject;
@@ -4703,7 +4703,7 @@ sub xrefSection
 {   my ($nr, $xref, $infil) = @_;
     my ($i, $root, $antal);
     $nr++;
-    $oldObject{('xref' . "$nr")} = $xref;  # Offset för xref sparas
+    $oldObject{('xref' . "$nr")} = $xref;  # The offset for xref is saved
     sysseek INFIL, $xref, 0;
     sysread INFIL, my $buf, 30;
     if ($buf =~ /xref/) {
@@ -4943,7 +4943,7 @@ sub unZipPrepare
 }
 
 ############################################
-# En definitionerna för en sida extraheras
+# Extract the definitions for a page
 ############################################
 
 sub getPage
@@ -5001,7 +5001,7 @@ sub getPage
    }
 
    #############
-   # Hitta root
+   # Find root
    #############
 
    my $objektet = getObject($root);;
@@ -5014,9 +5014,9 @@ sub getPage
       {  $Names = $1;
       }
       #################################################
-      #  Finns ett dictionary för Additional Actions ?
+      #  Is there a dictionary for Additional Actions ?
       #################################################
-      if ($objektet =~ m|/AA$ws*\<\<$ws*[^\>]+[^\>]+|so) # AA är ett dictionary
+      if ($objektet =~ m|/AA$ws*\<\<$ws*[^\>]+[^\>]+|so) # AA is a dictionary
       {  my $k;
          my ($dummy, $obj) = split /\/AA/, $objektet;
          $obj =~ s/\<\</\#\<\</gs;
@@ -5037,7 +5037,7 @@ sub getPage
    }
 
    #
-   # Hitta pages
+   # Find pages
    #
 
    if ($objektet =~ m|/Pages$ws+(\d+)$ws+\d+$ws+R|os)
@@ -5069,8 +5069,8 @@ sub getPage
    {   push @sidObj, $1;
    }
 
-   my $bryt1 = -20;                     # Hängslen
-   my $bryt2 = -20;                     # Svångrem för att undvika oändliga loopar
+   my $bryt1 = -20;                     # Belt
+   my $bryt2 = -20;                     # and braces, to avoid infinite loops
 
    while ($sidAcc < $sidnr)
    {  @underObjekt = @sidObj;
@@ -5097,7 +5097,7 @@ sub getPage
              last;  }
          $bryt2++;
       }
-      if (($bryt1 > $sidnr) || ($bryt2 > $sidnr))   # Bryt oändliga loopar
+      if (($bryt1 > $sidnr) || ($bryt2 > $sidnr))   # Break infinite loops
       {  last; }
    }
 
@@ -5106,16 +5106,16 @@ sub getPage
 
    if ($sidor == 1)
    {  #################################################
-      # Kontrollera Page-objektet för annoteringar
+      # Check the Page object for annotations
       #################################################
 
       if ($objektet =~ m|/Annots$ws*([^\/]+)|so)
       {  $Annots = $1;
       }
       #################################################
-      #  Finns ett dictionary för Additional Actions ?
+      #  Is there a dictionary for Additional Actions ?
       #################################################
-      if ($objektet =~ m|/AA$ws*\<\<$ws*[^\>]+[^\>]+|so)  # AA är ett dictionary. Hela kopieras
+      if ($objektet =~ m|/AA$ws*\<\<$ws*[^\>]+[^\>]+|so)  # AA is a dictionary. The whole thing is copied
       {  my $k;
          my ($dummy, $obj) = split /\/AA/, $objektet;
          $obj =~ s/\<\</\#\<\</gs;
@@ -5196,11 +5196,11 @@ sub getPage
           }
           $form{$fSource}[fVALID] = $validStream;
       }
-      else                              # Endast resurserna kan behandlas
+      else                              # Only the resources can be processed
       {   $formRes =~ s/\b(\d+)$ws+\d+$ws+R\b/xform() . ' 0 R'/oegs;
       }
    }
-   else                                # Endast resurserna kan behandlas
+   else                                # Only the resources can be processed
    {  $formRes =~ s/\b(\d+)$ws+\d+$ws+R\b/xform() . ' 0 R'/oegs;
    }
 
@@ -5221,7 +5221,7 @@ sub getPage
             $$$robj[oPOS]     = length($1);
             $$$robj[oSTREAMP] = $strPos;
 
-            ######## En bild ########
+            ######## An image ########
             if ($del1 =~ m|/Subtype$ws*/Image|so)
             {  $imSeq++;
                $$$robj[oIMAGENR] = $imSeq;
@@ -5259,7 +5259,7 @@ sub getPage
                $$$robj[oIMAGENR] = $imSeq;
                push @{$$$rform[fIMAGES]}, $gammal;
                ###################################
-               # Sparar dimensionerna för bilden
+               # Save the dimensions of the image
                ###################################
                if ($del1 =~ m|/Width$ws+(\d+)|os)
                {  $$$robj[oWIDTH] = $1; }
@@ -5304,7 +5304,7 @@ sub getPage
    my @nokids;
 
    #################################################################
-   # lägg upp vektorer över vilka objekt som har KIDS eller NOKIDS
+   # build vectors of which objects have KIDS or NOKIDS
    #################################################################
 
    for my $key (keys %{$$$ref[fOBJ]})
@@ -5419,8 +5419,8 @@ sub getPage
 }
 
 ##################################################
-# Översätter ett gammalt objektnr till ett nytt
-# och sparar en tabell med vad som skall skapas
+# Translate an old object number to a new one
+# and save a table of what is to be created
 ##################################################
 
 sub xform
@@ -5435,7 +5435,7 @@ sub xform
 
 sub kolla
 {  #
-   # Resurser
+   # Resources
    #
    my $obj       = shift;
    my $resources = shift;
@@ -5465,9 +5465,9 @@ sub kolla
    }
 
    if ($obj =~ m'^(.+/Resources)'so)
-   {  if ($obj =~ m/Resources($ws+\d+$ws+\d+$ws+R)/os)   # Hänvisning
+   {  if ($obj =~ m/Resources($ws+\d+$ws+\d+$ws+R)/os)   # Reference
       {  $resources = $1; }
-      else                 # Resurserna är ett dictionary. Hela kopieras
+      else                 # The resources are a dictionary. The whole thing is copied
       {  my $dummy;
          my $i;
          my $k;
@@ -5493,7 +5493,7 @@ sub kolla
 }
 
 ##############################
-# Ett formulär (åter)skapas
+# A form is (re)created
 ##############################
 
 sub byggForm
@@ -5538,7 +5538,7 @@ sub byggForm
    binmode INFIL;
 
    ####################################################
-   # Objekt utan referenser  kopieras och skrivs
+   # Objects without references are copied and written
    ####################################################
 
    for my $key (@{$form{$fSource}->[fNOKIDS]})
@@ -5573,7 +5573,7 @@ sub byggForm
    }
 
    #######################################################
-   # Objekt med referenser kopieras, behandlas och skrivs
+   # Objects with references are copied, processed and written
    #######################################################
    for my $key (@{$form{$fSource}->[fKIDS]})
    {   if ((defined $old{$key}) && ($objekt[$old{$key}]))  # already processed
@@ -5612,7 +5612,7 @@ sub byggForm
    }
 
    #################################
-   # Formulärobjektet behandlas
+   # Process the form object
    #################################
 
    my $key = $form{$fSource}->[fMAIN];
@@ -5653,7 +5653,7 @@ sub byggForm
 }
 
 ##################
-#  En bild läses
+#  Read an image
 ##################
 
 sub getImage
@@ -5693,7 +5693,7 @@ sub getImage
    binmode INFIL;
 
    #########################################################
-   # En bild med referenser kopieras, behandlas och skrivs
+   # An image with references is copied, processed and written
    #########################################################
 
    $nr = ++$objNr;
@@ -5712,7 +5712,7 @@ sub getImage
    }
    $pos += syswrite UTFIL, $utrad;
    ##################################
-   #  Skriv ut underordnade objekt
+   #  Write out subordinate objects
    ##################################
    while (scalar @skapa)
    {  my @process = @skapa;
@@ -5741,7 +5741,7 @@ sub getImage
 }
 
 ##############################################################
-#  Interaktiva funktioner knutna till ett formulär återskapas
+#  Interactive functions attached to a form are recreated
 ##############################################################
 
 sub AcroFormsEtc
@@ -5782,7 +5782,7 @@ sub AcroFormsEtc
    }
 
    ##################################
-   # Referenser behandlas och skrivs
+   # References are processed and written
    ##################################
 
    if (defined $intAct{$fSource}[iACROFORM])
@@ -5805,7 +5805,7 @@ sub AcroFormsEtc
    }
 
    ##################################
-   #  Skriv ut underordnade objekt
+   #  Write out subordinate objects
    ##################################
    while (scalar @skapa)
    {  my @process = @skapa;
@@ -5845,7 +5845,7 @@ sub AcroFormsEtc
 }
 
 ##############################
-# Ett namnobjekt extraheras
+# Extract a name object
 ##############################
 
 sub extractName
@@ -5891,7 +5891,7 @@ sub extractName
    binmode INFIL;
 
    #################################
-   # Resurserna läses
+   # Read the resources
    #################################
 
    $formRes = $form{$fSource}->[fRESOURCE];
@@ -6011,7 +6011,7 @@ sub extractName
    $pos += syswrite UTFIL, $utrad;
 
    ##################################
-   #  Skriv ut underordnade objekt
+   #  Write out subordinate objects
    ##################################
 
    while (scalar @skapa)
@@ -6042,7 +6042,7 @@ sub extractName
 }
 
 ########################
-# Ett objekt extraheras
+# Extract an object
 ########################
 
 sub extractObject
@@ -6171,7 +6171,7 @@ sub extractObject
    $pos += syswrite UTFIL, $utrad;
 
    ##################################
-   #  Skriv ut underordnade objekt
+   #  Write out subordinate objects
    ##################################
 
    while (scalar @skapa)
@@ -6203,7 +6203,7 @@ sub extractObject
 
 
 ##########################################
-# En fil analyseras och sidorna kopieras
+# Analyse a file and copy the pages
 ##########################################
 
 sub analysera
@@ -6250,7 +6250,7 @@ sub analysera
    {  $root      = xRefs($stati[7], $infil);
    }
    #############
-   # Hitta root
+   # Find root
    #############
 
    my $offSet;
@@ -6272,11 +6272,11 @@ sub analysera
       }
 
       #################################################
-      #  Finns ett dictionary för Additional Actions ?
+      #  Is there a dictionary for Additional Actions ?
       #################################################
-      if ($objektet =~ m|/AA($ws+\d+$ws+\d+$ws+R)|os)   # Hänvisning
+      if ($objektet =~ m|/AA($ws+\d+$ws+\d+$ws+R)|os)   # Reference
       {  $AARoot = $1; }
-      elsif ($objektet =~ m|/AA$ws*\<\<$ws*[^\>]+[^\>]+|so) # AA är ett dictionary
+      elsif ($objektet =~ m|/AA$ws*\<\<$ws*[^\>]+[^\>]+|so) # AA is a dictionary
       {  my $k;
          my ($dummy, $obj) = split /\/AA/, $objektet;
          $obj =~ s/\<\</\#\<\</gs;
@@ -6294,11 +6294,11 @@ sub analysera
              }
           }
        }
-       $taInterAkt = 1;   # Flagga att ta med interaktiva funktioner
+       $taInterAkt = 1;   # Flag to include interactive functions
    }
 
    #
-   # Hitta pages
+   # Find pages
    #
 
    if ($objektet =~ m|/Pages$ws+(\d+)$ws+\d+$ws+R|os)
@@ -6478,7 +6478,7 @@ sub sidAnalys
 
 
        ##########################
-       # Hitta resursdictionary
+       # Find the resource dictionary
        ##########################
        my $i = 0;
        while (($resources !~ m'\/'os) && ($i < 10))
@@ -6499,8 +6499,8 @@ sub sidAnalys
        }
 
        ###############################################################
-       # Läsa ev. referenser och skapa ett resursobjekt bestående av
-       # dictionaries (för utvalda resurser)
+       # Read any references and create a resource object consisting of
+       # dictionaries (for selected resources)
        ###############################################################
 
        if (scalar %sidFont)
@@ -6545,14 +6545,14 @@ sub sidAnalys
           }
        }
        ####################################################
-       # Nu är resurserna "normaliserade" med ursprungliga
-       # värden. Spara värden för "översättning"
+       # The resources are now "normalised" with their original
+       # values. Save the values for "translation"
        ####################################################
 
        $resources =~ s/\b(\d+)$ws+\d+$ws+R\b/xform() . ' 0 R'/oegs;
 
        ###############################
-       # Komplettera med nya resurser
+       # Add any new resources
        ###############################
 
        if (scalar %sidFont)
@@ -6634,12 +6634,12 @@ sub sidAnalys
        }
 
        if (exists $resurser{$resources})
-       {  $resources = "$resurser{$resources} 0 R\n";  # Fanns ett identiskt,
-       }                                               # använd det
+       {  $resources = "$resurser{$resources} 0 R\n";  # An identical one existed,
+       }                                               # use that one
        else
        {   $objNr++;
            if ( keys(%resurser) < 10)
-           {  $resurser{$resources} = $objNr;     # Spara 10 första resursobjekten
+           {  $resurser{$resources} = $objNr;     # Save the first 10 resource objects
            }
            $objekt[$objNr] = $pos;
            $resursObjekt   = "$objNr 0 obj<<$resources>>endobj\n";
@@ -6714,7 +6714,7 @@ sub sidAnalys
    {  $del1 .= "/Resources $resources";
    }
 
-   if (defined $streamObjekt)     # En ny ström ska läggas till
+   if (defined $streamObjekt)     # A new stream is to be added
    {  if ($del1 =~ m|/Contents$ws+(\d+)$ws+\d+$ws+R|os)
       {  my $oldCont = $1;
          $del1 =~ s|/Contents$ws+(\d+)$ws+\d+$ws+R|'/Contents [' . "$oldCont 0 R $streamObjekt" . ']'|oes;
@@ -6819,7 +6819,7 @@ sub behandlaNames
    my $antal     = 0;
    my $antNodUpp = 0;
    if ($namnObj)
-   {  if ($iForm)                                # Läsning via interntabell
+   {  if ($iForm)                                # Read via the internal table
       {   $objektet = getObject($namnObj, 1);
 
           if ($objektet =~ m'<<(.+)>>'ogs)
@@ -6849,7 +6849,7 @@ sub behandlaNames
              }
           }
       }
-      else                                #  Läsning av ett "doc"
+      else                                #  Read a "doc"
       {  $objektet = getObject($namnObj);
          if ($objektet =~ m'<<(.+)>>'ogs)
          {  $objektet = $1; }
@@ -6891,8 +6891,8 @@ sub behandlaNames
            {  if (exists $nyaFunk{$key})
               {   $initScript{$key} = $nyaFunk{$key};
               }
-              if (exists $script{$key})   # företräde för nya funktioner !
-              {   delete $script{$key};    # gammalt script m samma namn plockas bort
+              if (exists $script{$key})   # new functions take precedence !
+              {   delete $script{$key};    # old script with the same name is removed
               }
               my @fall = ($initScript{$key} =~ m'([\w\d\_\$]+)\s*\('ogs);
               for (@fall)
@@ -6984,7 +6984,7 @@ sub behandlaNames
            }
        }
        if ($antal > 0)
-       {   if ($antNodUpp == 0)     # inget i noderna över
+       {   if ($antNodUpp == 0)     # nothing in the nodes above
            {   $obj .= ']>>' . "endobj\n";
                $pos += syswrite UTFIL, $obj;
            }
