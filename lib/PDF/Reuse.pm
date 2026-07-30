@@ -315,7 +315,7 @@ sub prFile
    {  dropSourceCaches($utfil);
    }
    binmode UTFIL;
-   my $utrad = "\%PDF-1.4\n\%\â\ã\Ï\Ó\n";
+   my $utrad = "\%PDF-1.4\n\%\xe2\xe3\xcf\xd3\n";
 
    $pos   = syswrite UTFIL, $utrad;
 
