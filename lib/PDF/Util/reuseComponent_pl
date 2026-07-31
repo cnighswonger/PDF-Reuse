@@ -165,7 +165,7 @@ for my $font (keys %{$f})
           prFont($font);
           prText($x, $y, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+-./0123456789:;<=>?@');
           $y -= 14;
-          prText($x, $y, 'abcdefghijklmnopqrstuvwxyz{|}~\305\304\326\345\344\366[\]^_´`');
+          prText($x, $y, 'abcdefghijklmnopqrstuvwxyz{|}~\305\304\326\345\344\366[\]^_\264`');
           $y -= 40;
       }
    }
