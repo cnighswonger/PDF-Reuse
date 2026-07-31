@@ -5069,8 +5069,8 @@ sub getPage
    {   push @sidObj, $1;
    }
 
-   my $bryt1 = -20;                     # Belt
-   my $bryt2 = -20;                     # and braces, to avoid infinite loops
+   my $bryt1 = -20;                     # Loop guard 1
+   my $bryt2 = -20;                     # Loop guard 2 -- belt and braces against infinite loops
 
    while ($sidAcc < $sidnr)
    {  @underObjekt = @sidObj;
